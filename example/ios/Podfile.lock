@@ -11,7 +11,7 @@ PODS:
     - ExpoModulesCore
   - ExpoFont (13.0.0):
     - ExpoModulesCore
-  - ExpoInAppUpdates (0.2.0):
+  - ExpoInAppUpdates (0.4.0):
     - ExpoModulesCore
   - ExpoKeepAwake (14.0.1):
     - ExpoModulesCore
@@ -1781,7 +1781,7 @@ SPEC CHECKSUMS:
   ExpoAsset: 9de2f325e8c97a4c6c2bc85e507ae7f0809c91aa
   ExpoFileSystem: d8b51caca86749a132c8ffde46be9a175e46b819
   ExpoFont: 2fb6d98e0a5352bebcaa568d6bfbba0e0f2e0097
-  ExpoInAppUpdates: 6642c1b697ac1a851ffedca3814f992d2890ddd4
+  ExpoInAppUpdates: 8c5e40d5b27a6d2a6acd000b7fd3c4ae764ec5a3
   ExpoKeepAwake: 783e68647b969b210a786047c3daa7b753dcac1f
   ExpoModulesCore: 00a820930efd4a62ba41eb2bdc8015a2134255d0
   FBLazyVector: 7075bb12898bc3998fd60f4b7ca422496cc2cdf7

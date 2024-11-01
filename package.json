@@ -8,8 +8,8 @@
     "build": "expo-module build",
     "clean": "expo-module clean",
     "lint": "expo-module lint",
-    "prepare": "expo-module prepare",
-    "prepublishOnly": "expo-module prepublishOnly",
+    "prepare": "bun expo-module prepare",
+    "prepublishOnly": "bun expo-module prepublishOnly",
     "expo-module": "expo-module",
     "open:ios": "xed example/ios",
     "open:android": "open -a \"Android Studio\" example/android"
@@ -31,7 +31,7 @@
   "devDependencies": {
     "@types/react": "~18.2.79",
     "expo-module-scripts": "^3.5.2",
-    "expo-modules-core": "^1.12.24"
+    "expo-modules-core": "^1.12.26"
   },
   "peerDependencies": {
     "expo": "*",
