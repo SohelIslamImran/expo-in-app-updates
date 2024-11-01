@@ -53,3 +53,5 @@ npm-debug.log
 
 # Expo
 .expo/*
+example/ios
+example/android
