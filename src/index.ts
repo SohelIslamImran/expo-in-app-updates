@@ -33,9 +33,8 @@ export async function startUpdate(isImmediate = false) {
     return ExpoInAppUpdatesModule.startUpdate(
       isImmediate ? AppUpdateType.IMMEDIATE : AppUpdateType.FLEXIBLE
     );
-  } else {
-    return ExpoInAppUpdatesModule.startUpdate();
   }
+  return ExpoInAppUpdatesModule.startUpdate();
 }
 
 /**

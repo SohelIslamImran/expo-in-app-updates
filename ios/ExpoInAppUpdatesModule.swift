@@ -26,9 +26,10 @@ public class ExpoInAppUpdatesModule: Module {
                     if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
                        let results = json["results"] as? [[String: Any]],
                        let appStoreVersion = results.first?["version"] as? String {
+                        let releaseDate = results.first?["currentVersionReleaseDate"] ?? nil
                         let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
                         let updateAvailable = appStoreVersion != currentVersion
-                        promise.resolve(["updateAvailable": updateAvailable, "storeVersion": appStoreVersion])
+                        promise.resolve(["updateAvailable": updateAvailable, "releaseDate": releaseDate, "storeVersion": appStoreVersion])
                     } else {
                         promise.resolve(["updateAvailable": false])
                     }
