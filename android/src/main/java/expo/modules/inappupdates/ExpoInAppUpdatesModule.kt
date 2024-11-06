@@ -62,6 +62,7 @@ class ExpoInAppUpdatesModule : Module() {
                             "updateAvailable" to true,
                             "immediateAllowed" to appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
                             "flexibleAllowed" to appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
+                            "daysSinceRelease" to appUpdateInfo.clientVersionStalenessDays(),
                             "storeVersion" to appUpdateInfo.availableVersionCode().toString()
                         ))
                     }

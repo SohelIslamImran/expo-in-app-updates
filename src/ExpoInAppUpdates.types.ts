@@ -20,6 +20,19 @@ export type ExpoInAppUpdatesModuleType = {
     /** The latest app version published in the App Store / Play Store. On Android, this is the `versionCode` that you defined in `app.json`. */
     storeVersion: string;
 
+    /** The release date of the current version of the app
+     *
+     * @platform iOS */
+    releaseDate?: string | null;
+
+    /** The value of the [clientVersionStalenessDays](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#clientVersionStalenessDays()).
+     * @description If an update is available or in progress, this will be the number of days since the Google Play Store app on the user's device has learnt about an available update.
+     *
+     * If update is not available, or if staleness information is unavailable, this will be null.
+     *
+     * @platform android */
+    daysSinceRelease?: string | null;
+
     /**
      * If able to start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible)
      *

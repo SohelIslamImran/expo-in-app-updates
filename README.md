@@ -12,11 +12,11 @@ On Android, it will show a native overlay like the screenshots below but on iOS 
 
 ## Installation
 
-```
+```sh
 npm install expo-in-app-updates
 ```
 
-For iOS, add your AppStoreID (the id in your app store link, e.g https://apps.apple.com/pl/app/example/id1234567890) in `infoPlist` in your `app.json`
+For iOS, add your AppStoreID (the id in your app store link, e.g <https://apps.apple.com/pl/app/example/id1234567890>) in `infoPlist` in your `app.json`
 
 ```json
 {
@@ -33,16 +33,16 @@ For iOS, add your AppStoreID (the id in your app store link, e.g https://apps.ap
 > For bare React Native projects, you must ensure that you have [installed and configured the `expo` package](https://docs.expo.dev/bare/installing-expo-modules/) before continuing.
 > Run `npx pod-install` after installing the npm package for iOS.
 
-```
+```sh
 npx expo run:android | run:ios
 ```
 
 ## Usages
 
-### Check for updates :
+### Check for updates
 
 ```ts
-const { 
+const {
   updateAvailable,
   flexibleAllowed,
   immediateAllowed
@@ -52,11 +52,13 @@ const {
 Checks if an app update is available. Return a promise that resolves `updateAvailable` and `storeVersion` for Android and iOS, `flexibleAllowed` and `immediateAllowed` for Android.
 
 - `updateAvailable`: If an update is available.
-- `flexibleAllowed`: If able to start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible)
-- `immediateAllowed`: If able to start an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate)
+- `flexibleAllowed`: If able to start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible) (Android)
+- `immediateAllowed`: If able to start an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) (Android)
 - `storeVersion`: The latest app version published in the App Store / Play Store. On Android, this is the `versionCode` that you defined in `app.json`.
+- `releaseDate`: The release date of the current version of the app (iOS)
+- `daysSinceRelease`: The value of the [clientVersionStalenessDays](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#clientVersionStalenessDays()). If an update is available or in progress, this will be the number of days since the Google Play Store app on the user's device has learnt about an available update. If update is not available, or if staleness information is unavailable, this will be null. (Android)
 
-### Start an in-app update :
+### Start an in-app update
 
 ```ts
 const isUpdateStarted = await ExpoInAppUpdates.startUpdate();
@@ -65,13 +67,13 @@ const isUpdateStarted = await ExpoInAppUpdates.startUpdate();
 Starts an in-app update. Return a boolean whether the update was started successfully.
 
 > [!NOTE]
-> If you want an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) that will cover the app with the update overlay, pass true to this function. By default, it will start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible). More details : https://developer.android.com/guide/playcore/in-app-updates#update-flows
+> If you want an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) that will cover the app with the update overlay, pass true to this function. By default, it will start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible). More details : <https://developer.android.com/guide/playcore/in-app-updates#update-flows>
 >
 > ```ts
 > const isUpdateStarted = await ExpoInAppUpdates.startUpdate(true);
 > ```
 
-### Check and start an in-app update :
+### Check and start an in-app update
 
 ```ts
 const isUpdateStarted = await ExpoInAppUpdates.checkAndStartUpdate();
@@ -80,7 +82,7 @@ const isUpdateStarted = await ExpoInAppUpdates.checkAndStartUpdate();
 Checks if an app update is available and starts the update process if necessary. Return a boolean whether the update was started successfully.
 
 > [!NOTE]
-> If you want an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) that will cover the app with the update overlay, pass true to this function. By default, it will start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible). More details : https://developer.android.com/guide/playcore/in-app-updates#update-flows
+> If you want an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) that will cover the app with the update overlay, pass true to this function. By default, it will start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible). More details : <https://developer.android.com/guide/playcore/in-app-updates#update-flows>
 >
 > ```ts
 > const isUpdateStarted = await ExpoInAppUpdates.checkAndStartUpdate(true);
@@ -89,7 +91,7 @@ Checks if an app update is available and starts the update process if necessary.
 > [!TIP]
 > You may want to check for updates and show an alert or custom UI on iOS. Since iOS does not have any in-app update solution, it just opens the app in the App Store on a modal to update the app. See the [example](#example) below.
 
-### Example
+### Examples
 
 This example will ask the user for update the app if update available on every app startup until the user update the app.
 
@@ -146,7 +148,7 @@ export default function App() {
 
 ---
 
-This example will ask the user for update the app if update available and if user don't update or cancel the update, then the user will not be asked for update again until a new version published again.
+This example will ask the user for update the app if update available and if user don't update or cancel the update, then the user will not be asked again for the update until a new version published again.
 
 ```tsx
 import { useEffect } from "react";
@@ -196,6 +198,57 @@ const useInAppUpdates = () => {
             },
           ]
         );
+      }
+    );
+  }, []);
+};
+```
+
+---
+
+This example checks and prevents asking for updates for 2 days after release of the app.
+
+```tsx
+import { useEffect } from "react";
+import { Alert, Platform } from "react-native";
+
+import * as ExpoInAppUpdates from "expo-in-app-updates";
+
+function getDiffInDays(date) {
+  const diffInMs = Math.abs(new Date() - new Date(date)); // Calculate difference in ms
+  return diffInMs / (1000 * 60 * 60 * 24); // Convert ms to days
+}
+
+const useInAppUpdates = () => {
+  useEffect(() => {
+    if (__DEV__ || Platform.OS === "web") return;
+
+    ExpoInAppUpdates.checkForUpdate().then(
+      async ({ updateAvailable, daysSinceRelease, releaseDate }) => {
+        if (!updateAvailable) return;
+
+        // Check and prevent asking for updates for 2 days after release
+        if (Platform.OS === "android" && ((daysSinceRelease??0) >= 2)) {
+          return await ExpoInAppUpdates.startUpdate();
+        }
+
+        // Check and prevent asking for updates for 2 days after release
+        if (getDiffInDays(releaseDate) >= 2) {
+          Alert.alert(
+            "Update available",
+            "A new version of the app is available with many improvements and bug fixes. Would you like to update now?",
+            [
+              {
+                text: "Update",
+                isPreferred: true,
+                async onPress() {
+                  await ExpoInAppUpdates.startUpdate();
+                },
+              },
+              { text: "Cancel" },
+            ]
+          );
+        }
       }
     );
   }, []);

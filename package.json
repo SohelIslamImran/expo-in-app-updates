@@ -1,6 +1,6 @@
 {
   "name": "expo-in-app-updates",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Native in-app updates for Android and iOS",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -29,6 +29,7 @@
   "homepage": "https://github.com/SohelIslamImran/expo-in-app-updates#readme",
   "dependencies": {},
   "devDependencies": {
+    "@biomejs/biome": "1.9.4",
     "@types/react": "~18.2.79",
     "expo-module-scripts": "^3.5.2",
     "expo-modules-core": "^1.12.26"
