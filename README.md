@@ -4,7 +4,7 @@ Native in-app updates for Android and iOS.
 
 This module uses the Android native [in-app updates](https://developer.android.com/guide/playcore/in-app-updates) library on Android and [iTunes Search API](https://performance-partners.apple.com/search-api) on iOS.
 
-On Android, it will show a native overlay like the screenshots below but on iOS it opens the app in the App Store on a modal to update the app, since iOS does not have any in-app update solution. You may want to show an alert or custom UI on iOS. See the [example](#example) at the bottom.
+On Android, it will show a native overlay like the screenshots below but on iOS it opens the app in the App Store on a modal to update the app, since iOS does not have any in-app update solution. You may want to show an alert or custom UI on iOS. See the [example](#examples) at the bottom.
 
 <a href="https://developer.android.com/guide/playcore/in-app-updates#flexible"><img src="https://developer.android.com/static/images/app-bundle/flexible_flow.png" alt="Example flexible updates" height="400"/></a>
 
@@ -45,7 +45,10 @@ npx expo run:android | run:ios
 const {
   updateAvailable,
   flexibleAllowed,
-  immediateAllowed
+  immediateAllowed,
+  storeVersion,
+  releaseDate,
+  daysSinceRelease
 } = await ExpoInAppUpdates.checkForUpdate();
 ```
 
@@ -89,7 +92,7 @@ Checks if an app update is available and starts the update process if necessary.
 > ```
 
 > [!TIP]
-> You may want to check for updates and show an alert or custom UI on iOS. Since iOS does not have any in-app update solution, it just opens the app in the App Store on a modal to update the app. See the [example](#example) below.
+> You may want to check for updates and show an alert or custom UI on iOS. Since iOS does not have any in-app update solution, it just opens the app in the App Store on a modal to update the app. See the [example](#examples) below.
 
 ### Examples
 
