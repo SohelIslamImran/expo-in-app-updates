@@ -10,6 +10,7 @@
   },
   "linter": {
     "enabled": true,
+    "ignore": ["babel.config.js", "metro.config.js", "webpack.config.js"],
     "rules": {
       "recommended": true
     }

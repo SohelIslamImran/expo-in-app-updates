@@ -30,9 +30,8 @@
   "dependencies": {},
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@types/react": "~18.2.79",
-    "expo-module-scripts": "^3.5.2",
-    "expo-modules-core": "^1.12.26"
+    "@types/react": "~18.3.12",
+    "expo-module-scripts": "^4.0.2"
   },
   "peerDependencies": {
     "expo": "*",
