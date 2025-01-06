@@ -1,6 +1,6 @@
 # expo-in-app-updates
 
-Native in-app updates for Android and iOS.
+A lightweight and easy-to-use module for implementing native in-app updates for Android and iOS.
 
 This module uses the Android native [in-app updates](https://developer.android.com/guide/playcore/in-app-updates) library on Android and [iTunes Search API](https://performance-partners.apple.com/search-api) on iOS.
 
