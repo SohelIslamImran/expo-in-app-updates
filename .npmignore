@@ -7,6 +7,7 @@
 __mocks__
 __tests__
 
+.eslintrc.js
 /biome.json
 /babel.config.js
 /android/src/androidTest/

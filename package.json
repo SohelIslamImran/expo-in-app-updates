@@ -39,8 +39,7 @@
     "git": {
       "commitMessage": "chore: release v${version}",
       "tagName": "v${version}",
-      "push": true,
-      "requireCleanWorkingDir": false
+      "push": true
     },
     "npm": {
       "publish": true
@@ -84,10 +83,7 @@
       }
     },
     "hooks": {
-      "before:init": [
-        "bun lint",
-        "bun run build"
-      ]
+      "before:init": ["bun lint", "bun run build"]
     }
   }
 }
