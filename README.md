@@ -282,3 +282,7 @@ To test in-app updates on iOS:
 > The iTunes Search API used for version checking may have some delay in reflecting the latest App Store version. It's recommended to wait a few minutes after publishing a new version before testing.
 
 ---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a list of changes in each release.
