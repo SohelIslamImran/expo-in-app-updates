@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.7.0 (2025-02-05)
+
+### 🐛 Bug Fixes
+
+* iOS caching issue on lookup endpoint ([#7](https://github.com/SohelIslamImran/expo-in-app-updates/issues/7)) ([23d61ad](https://github.com/SohelIslamImran/expo-in-app-updates/commit/23d61ad4f8d842aae57066006d87895ab2cf9b48))
+* iOS caching issue on lookup endpoint [#7](https://github.com/SohelIslamImran/expo-in-app-updates/issues/7) ([66e96dc](https://github.com/SohelIslamImran/expo-in-app-updates/commit/66e96dc8fd27b6d6900c78ef4f84083848d4ac14))
+* **ios:** country restricted apps lookup fails ([#14](https://github.com/SohelIslamImran/expo-in-app-updates/issues/14)) ([c9eb093](https://github.com/SohelIslamImran/expo-in-app-updates/commit/c9eb093f45cf974e719c95fc2e82dba7e443cbb0))
+
+### 📚 Documentation
+
+* Add changelog reference to README ([d91fa19](https://github.com/SohelIslamImran/expo-in-app-updates/commit/d91fa194216095b9550642c6aa7d15337c1302cc))
+* Add testing instructions for in-app updates on Android and iOS ([9545587](https://github.com/SohelIslamImran/expo-in-app-updates/commit/9545587678866419b4084cdf89f9b39ebb588e39))
+
+### 🛠️ Changes in Build Process & Tools
+
+* Add release-it configuration and update development scripts ([c5f5784](https://github.com/SohelIslamImran/expo-in-app-updates/commit/c5f5784d22591a6daeb2ea2c28b7858c035303e7))
+* Update dependencies ([6b11990](https://github.com/SohelIslamImran/expo-in-app-updates/commit/6b1199020799fc4b14f012f3b02ad1e143ec6653))
+
 ## [0.6.0] - 2025-01-05
 
 - Updated configuration files and dependencies ([commit](https://github.com/SohelIslamImran/expo-in-app-updates/commit/07dcbfb66c30eaeacd3bd1fe943e06012e46de67))
