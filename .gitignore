@@ -55,3 +55,4 @@ npm-debug.log
 .expo/*
 example/ios
 example/android
+.eslintrc.js

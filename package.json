@@ -7,10 +7,10 @@
   "scripts": {
     "build": "expo-module build",
     "clean": "expo-module clean",
-    "lint": "expo-module lint",
-    "prepare": "bun expo-module prepare",
-    "prepublishOnly": "bun expo-module prepublishOnly",
-    "expo-module": "expo-module",
+    "lint": "biome check --fix",
+    "release": "release-it",
+    "prepare": "expo-module prepare",
+    "prepublishOnly": "expo-module prepublishOnly",
     "open:ios": "xed example/ios",
     "open:android": "open -a \"Android Studio\" example/android"
   },
@@ -30,12 +30,60 @@
   "dependencies": {},
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
+    "@release-it/conventional-changelog": "^10.0.0",
     "@types/react": "~18.3.12",
-    "expo-module-scripts": "^4.0.3"
+    "expo-module-scripts": "^4.0.3",
+    "release-it": "^18.1.2"
   },
-  "peerDependencies": {
-    "expo": "*",
-    "react": "*",
-    "react-native": "*"
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release v${version}",
+      "tagName": "v${version}",
+      "push": true
+    },
+    "npm": {
+      "publish": true
+    },
+    "plugins": {
+      "@release-it/conventional-changelog": {
+        "infile": "CHANGELOG.md",
+        "preset": {
+          "name": "conventionalcommits",
+          "types": [
+            {
+              "type": "feat",
+              "section": "✨ Features"
+            },
+            {
+              "type": "fix",
+              "section": "🐛 Bug Fixes"
+            },
+            {
+              "type": "docs",
+              "section": "📚 Documentation"
+            },
+            {
+              "type": "style",
+              "section": "🎨 Styles"
+            },
+            {
+              "type": "refactor",
+              "section": "🔨 Code Refactoring"
+            },
+            {
+              "type": "perf",
+              "section": "💨 Performance Improvements"
+            },
+            {
+              "type": "chore",
+              "section": "🛠️ Changes in Build Process & Tools"
+            }
+          ]
+        }
+      }
+    },
+    "hooks": {
+      "before:init": ["bun lint", "bun build"]
+    }
   }
 }
