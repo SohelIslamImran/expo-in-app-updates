@@ -16,7 +16,7 @@ On Android, it will show a native overlay like the screenshots below but on iOS 
 npm install expo-in-app-updates
 ```
 
-For iOS, add your AppStoreID (the id in your app store link, e.g <https://apps.apple.com/pl/app/example/id1234567890>) in `infoPlist` in your `app.json` / `app.config.js`.
+For iOS, add your `AppStoreID` (the id in your app store link, e.g <https://apps.apple.com/pl/app/example/id1234567890>) in `infoPlist` in your `app.json` / `app.config.js`.
 
 If your app is not available in the US, the default lookup might not find it. To fix this, you can set the `AppStoreCountry` to a country code where your app is available (e.g `pl` for Poland) in `infoPlist` in your `app.json` / `app.config.js`.
 
