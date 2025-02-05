@@ -263,4 +263,22 @@ const useInAppUpdates = () => {
 
 ---
 
+### Testing In-App Updates
+
+#### Android
+
 Use [internal app sharing](https://support.google.com/googleplay/android-developer/answer/9844679) of Play Console to [**Test in-app updates**](https://developer.android.com/guide/playcore/in-app-updates/test)
+
+#### iOS
+
+To test in-app updates on iOS:
+
+1. First publish your app to App Store at least once. Then make sure you have set the correct `AppStoreID` in your `app.json` / `app.config.js`.
+2. Create a Development/Production/TestFlight build with a lower version number than your App Store version
+3. Install the build on your device
+4. Run the app and the update check should detect the newer App Store version
+
+> [!NOTE]
+> The iTunes Search API used for version checking may have some delay in reflecting the latest App Store version. It's recommended to wait a few minutes after publishing a new version before testing.
+
+---
