@@ -4,8 +4,6 @@
 
 ### 🐛 Bug Fixes
 
-* iOS caching issue on lookup endpoint ([#7](https://github.com/SohelIslamImran/expo-in-app-updates/issues/7)) ([23d61ad](https://github.com/SohelIslamImran/expo-in-app-updates/commit/23d61ad4f8d842aae57066006d87895ab2cf9b48))
-* iOS caching issue on lookup endpoint [#7](https://github.com/SohelIslamImran/expo-in-app-updates/issues/7) ([66e96dc](https://github.com/SohelIslamImran/expo-in-app-updates/commit/66e96dc8fd27b6d6900c78ef4f84083848d4ac14))
 * **ios:** country restricted apps lookup fails ([#14](https://github.com/SohelIslamImran/expo-in-app-updates/issues/14)) ([c9eb093](https://github.com/SohelIslamImran/expo-in-app-updates/commit/c9eb093f45cf974e719c95fc2e82dba7e443cbb0))
 
 ### 📚 Documentation
