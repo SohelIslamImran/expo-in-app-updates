@@ -30,7 +30,7 @@ public class ExpoInAppUpdatesModule: Module {
                        let appStoreVersion = results.first?["version"] as? String {
                         let releaseDate = results.first?["currentVersionReleaseDate"] ?? nil
                         let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-                        let updateAvailable = appStoreVersion != currentVersion
+                        let updateAvailable = appStoreVersion.compare(currentVersion, options: .numeric) == .orderedDescending
                         promise.resolve(["updateAvailable": updateAvailable, "releaseDate": releaseDate, "storeVersion": appStoreVersion])
                     } else {
                         promise.resolve(["updateAvailable": false])
