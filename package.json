@@ -1,6 +1,6 @@
 {
   "name": "expo-in-app-updates",
-  "version": "0.7.0",
+  "version": "0.9.0",
   "description": "Native in-app updates for Android and iOS",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -83,7 +83,10 @@
       }
     },
     "hooks": {
-      "before:init": ["bun lint", "bun run build"]
+      "before:init": [
+        "bun lint",
+        "bun run build"
+      ]
     }
   }
 }
