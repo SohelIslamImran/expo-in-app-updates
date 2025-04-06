@@ -3,4 +3,7 @@ export default {
   IMMEDIATE: undefined,
   startUpdate() {},
   checkForUpdate() {},
+  addListener() {
+    return { remove: () => {} };
+  },
 };

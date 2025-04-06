@@ -17,8 +17,16 @@ import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.InstallStateUpdatedListener
 
 class ExpoInAppUpdatesModule : Module() {
-  private lateinit var appUpdateManager: AppUpdateManager
+    private lateinit var appUpdateManager: AppUpdateManager
     private val requestCode = 100
+
+    // Event constants
+    companion object {
+        private const val EVENT_UPDATE_START = "updateStart"
+        private const val EVENT_UPDATE_DOWNLOADED = "updateDownloaded"
+        private const val EVENT_UPDATE_CANCELLED = "updateCancelled"
+        private const val EVENT_UPDATE_COMPLETED = "updateCompleted"
+    }
 
     private fun redirectToStore() {
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -29,11 +37,28 @@ class ExpoInAppUpdatesModule : Module() {
     }
 
     private val listener = InstallStateUpdatedListener { state ->
-        if (state.installStatus() == InstallStatus.DOWNLOADED) {
-            // Trigger user action to complete the update
-            appUpdateManager.completeUpdate()
-        } else if (state.installStatus() == InstallStatus.FAILED){
-            redirectToStore()
+        when (state.installStatus()) {
+            InstallStatus.DOWNLOADED -> {
+                // Notify that download is completed and ready to install
+                sendEvent(EVENT_UPDATE_DOWNLOADED, mapOf("readyToInstall" to true))
+
+                // Trigger user action to complete the update
+                appUpdateManager.completeUpdate()
+            }
+            InstallStatus.INSTALLED -> {
+                // Update has been installed successfully
+                sendEvent(EVENT_UPDATE_COMPLETED, mapOf())
+            }
+            InstallStatus.FAILED -> {
+                // Update failed, redirect to store
+                redirectToStore()
+            }
+            InstallStatus.CANCELED -> {
+                // Update was canceled by the user
+                sendEvent(EVENT_UPDATE_CANCELLED, mapOf(
+                    "reason" to "User cancelled the installation"
+                ))
+            }
         }
     }
 
@@ -43,6 +68,14 @@ class ExpoInAppUpdatesModule : Module() {
         Constants(
             "FLEXIBLE" to AppUpdateType.FLEXIBLE,
             "IMMEDIATE" to AppUpdateType.IMMEDIATE
+        )
+
+        // Register all events
+        Events(
+            EVENT_UPDATE_START,
+            EVENT_UPDATE_DOWNLOADED,
+            EVENT_UPDATE_CANCELLED,
+            EVENT_UPDATE_COMPLETED
         )
 
         OnCreate {
@@ -87,6 +120,10 @@ class ExpoInAppUpdatesModule : Module() {
                 if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     && appUpdateInfo.isUpdateTypeAllowed(updateType)
                 ) {
+                    // Send update start event
+                    val updateTypeName = if (updateType == AppUpdateType.FLEXIBLE) "FLEXIBLE" else "IMMEDIATE"
+                    sendEvent(EVENT_UPDATE_START, mapOf("updateType" to updateTypeName))
+
                     appContext.currentActivity?.let { activity ->
                         val appUpdateOptions = AppUpdateOptions.newBuilder(updateType)
                             .setAllowAssetPackDeletion(true)
@@ -108,8 +145,14 @@ class ExpoInAppUpdatesModule : Module() {
 
         OnActivityResult { _, activityResult ->
             if (activityResult.requestCode == requestCode) {
-                if (activityResult.resultCode != Activity.RESULT_OK && activityResult.resultCode != Activity.RESULT_CANCELED) {
-                    redirectToStore()
+                if (activityResult.resultCode != Activity.RESULT_OK) {
+                    if (activityResult.resultCode == Activity.RESULT_CANCELED) {
+                        // User canceled the update
+                        sendEvent(EVENT_UPDATE_CANCELLED, mapOf("reason" to "User cancelled from system dialog"))
+                    } else {
+                        // Update flow failed, try redirecting to Play Store
+                        redirectToStore()
+                    }
                 }
             }
         }

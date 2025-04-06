@@ -58,4 +58,45 @@ export type ExpoInAppUpdatesModuleType = {
      * @platform android */
     updateType?: number
   ) => Promise<boolean>;
+
+  /**
+   * Adds an event listener for the specified event
+   *
+   * @param eventName - The event name to listen for
+   * @param listener - The callback function
+   * @returns A subscription object with a remove method
+   */
+  addListener: <K extends keyof ExpoInAppUpdatesEvents>(
+    eventName: K,
+    listener: ExpoInAppUpdatesEvents[K]
+  ) => { remove: () => void };
 };
+
+export type UpdateStartEvent = {
+  /** Type of update that was started */
+  updateType?: "FLEXIBLE" | "IMMEDIATE";
+};
+
+export type UpdateDownloadedEvent = {
+  /** Whether the update is ready to be installed */
+  readyToInstall: boolean;
+};
+
+export type UpdateCancelledEvent = {
+  /** Reason for cancellation if available */
+  reason?: string;
+};
+
+export type UpdateCompletedEvent = {
+  /** Version that was installed */
+  version?: string;
+};
+
+export type UpdateEvents = {
+  updateStart: (event: UpdateStartEvent) => void;
+  updateDownloaded: (event: UpdateDownloadedEvent) => void;
+  updateCancelled: (event: UpdateCancelledEvent) => void;
+  updateCompleted: (event: UpdateCompletedEvent) => void;
+};
+
+export type ExpoInAppUpdatesEvents = UpdateEvents;

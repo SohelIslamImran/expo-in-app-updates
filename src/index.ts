@@ -1,5 +1,12 @@
 import { Platform } from "react-native";
 
+import type {
+  UpdateStartEvent,
+  UpdateCancelledEvent,
+  UpdateCompletedEvent,
+  UpdateDownloadedEvent,
+  ExpoInAppUpdatesEvents,
+} from "./ExpoInAppUpdates.types";
 import ExpoInAppUpdatesModule from "./ExpoInAppUpdatesModule";
 
 /**
@@ -51,3 +58,25 @@ export async function checkAndStartUpdate(isImmediate = false) {
   }
   return false;
 }
+
+/**
+ * Add a listener for update events
+ * @param eventName - Name of the event to listen for
+ * @param listener - Callback function to execute when event is triggered
+ * @returns A function to remove the event listener
+ */
+export function addUpdateListener<K extends keyof ExpoInAppUpdatesEvents>(
+  eventName: K,
+  listener: ExpoInAppUpdatesEvents[K]
+) {
+  const subscription = ExpoInAppUpdatesModule.addListener(eventName, listener);
+  return subscription.remove;
+}
+
+// Export event types
+export type {
+  UpdateStartEvent,
+  UpdateDownloadedEvent,
+  UpdateCancelledEvent,
+  UpdateCompletedEvent,
+};

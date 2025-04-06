@@ -111,32 +111,42 @@ const useInAppUpdates = () => {
   useEffect(() => {
     if (__DEV__ || Platform.OS === "web") return;
 
-    if (Platform.OS === "android") {
-      ExpoInAppUpdates.checkAndStartUpdate(
-        // If you want an immediate update that will cover the app with the update overlay, set it to true.
-        // More details : https://developer.android.com/guide/playcore/in-app-updates#update-flows
-        false
-      );
-    } else {
-      ExpoInAppUpdates.checkForUpdate().then(({ updateAvailable }) => {
-        if (!updateAvailable) return;
+    const checkForUpdates = async () => {
+      try {
+        if (Platform.OS === "android") {
+          // If you want an immediate update that will cover the app with the update overlay, set it to true.
+          // More details: https://developer.android.com/guide/playcore/in-app-updates#update-flows
+          await ExpoInAppUpdates.checkAndStartUpdate(false);
+        } else {
+          const result = await ExpoInAppUpdates.checkForUpdate();
 
-        Alert.alert(
-          "Update available",
-          "A new version of the app is available with many improvements and bug fixes. Would you like to update now?",
-          [
-            {
-              text: "Update",
-              isPreferred: true,
-              async onPress() {
-                await ExpoInAppUpdates.startUpdate();
+          if (!result.updateAvailable) return;
+
+          Alert.alert(
+            "Update available",
+            "A new version of the app is available with many improvements and bug fixes. Would you like to update now?",
+            [
+              {
+                text: "Update",
+                isPreferred: true,
+                onPress: async () => {
+                  try {
+                    await ExpoInAppUpdates.startUpdate();
+                  } catch (err) {
+                    console.error("Failed to start update:", err);
+                  }
+                },
               },
-            },
-            { text: "Cancel" },
-          ]
-        );
-      });
-    }
+              { text: "Cancel" },
+            ]
+          );
+        }
+      } catch (err) {
+        console.error("Update check failed:", err);
+      }
+    };
+
+    checkForUpdates();
   }, []);
 };
 
@@ -167,19 +177,24 @@ const useInAppUpdates = () => {
   useEffect(() => {
     if (__DEV__ || Platform.OS === "web") return;
 
-    ExpoInAppUpdates.checkForUpdate().then(
-      async ({ updateAvailable, storeVersion }) => {
-        if (!updateAvailable) return;
+    const checkForUpdates = async () => {
+      try {
+        const result = await ExpoInAppUpdates.checkForUpdate();
+        if (!result.updateAvailable) return;
 
         // Get the last saved storeVersion from your local-storage (AsyncStorage/MMKV)
         const savedStoreVersion = await AsyncStorage.getItem("savedStoreVersion");
         // Check and return from here to prevent asking for updates again for the same storeVersion.
-        if (savedStoreVersion === storeVersion) return;
+        if (savedStoreVersion === result.storeVersion) return;
 
         if (Platform.OS === "android") {
-          await ExpoInAppUpdates.startUpdate();
-          // Saving the storeVersion after checked for updates, so we can check and ignore asking for updates again for the same storeVersion
-          await AsyncStorage.setItem("savedStoreVersion", storeVersion);
+          try {
+            await ExpoInAppUpdates.startUpdate();
+            // Saving the storeVersion after checked for updates, so we can check and ignore asking for updates again for the same storeVersion
+            await AsyncStorage.setItem("savedStoreVersion", result.storeVersion);
+          } catch (updateErr) {
+            console.error("Failed to start update:", updateErr);
+          }
           return;
         }
 
@@ -190,22 +205,34 @@ const useInAppUpdates = () => {
             {
               text: "Update",
               isPreferred: true,
-              async onPress() {
-                await ExpoInAppUpdates.startUpdate();
-                await AsyncStorage.setItem("savedStoreVersion", storeVersion);
+              onPress: async () => {
+                try {
+                  await ExpoInAppUpdates.startUpdate();
+                  await AsyncStorage.setItem("savedStoreVersion", result.storeVersion);
+                } catch (updateErr) {
+                  console.error("Failed to start update:", updateErr);
+                }
               },
             },
             {
               text: "Cancel",
-              async onPress() {
-                // Saving the storeVersion after checked for updates, so we can check and ignore asking for updates again for the same storeVersion
-                await AsyncStorage.setItem("savedStoreVersion", storeVersion);
+              onPress: async () => {
+                try {
+                  // Saving the storeVersion after checked for updates, so we can check and ignore asking for updates again for the same storeVersion
+                  await AsyncStorage.setItem("savedStoreVersion", result.storeVersion);
+                } catch (storageErr) {
+                  console.error("Failed to save version:", storageErr);
+                }
               },
             },
           ]
         );
+      } catch (err) {
+        console.error("Update check failed:", err);
       }
-    );
+    };
+
+    checkForUpdates();
   }, []);
 };
 ```
@@ -229,17 +256,23 @@ const useInAppUpdates = () => {
   useEffect(() => {
     if (__DEV__ || Platform.OS === "web") return;
 
-    ExpoInAppUpdates.checkForUpdate().then(
-      async ({ updateAvailable, daysSinceRelease, releaseDate }) => {
-        if (!updateAvailable) return;
+    const checkForUpdates = async () => {
+      try {
+        const result = await ExpoInAppUpdates.checkForUpdate();
+        if (!result.updateAvailable) return;
 
         // Check and prevent asking for updates for 2 days after release
-        if (Platform.OS === "android" && ((daysSinceRelease??0) >= 2)) {
-          return await ExpoInAppUpdates.startUpdate();
+        if (Platform.OS === "android" && ((result.daysSinceRelease??0) >= 2)) {
+          try {
+            await ExpoInAppUpdates.startUpdate();
+          } catch (updateErr) {
+            console.error("Failed to start update:", updateErr);
+          }
+          return;
         }
 
         // Check and prevent asking for updates for 2 days after release
-        if (getDiffInDays(releaseDate) >= 2) {
+        if (result.releaseDate && getDiffInDays(result.releaseDate) >= 2) {
           Alert.alert(
             "Update available",
             "A new version of the app is available with many improvements and bug fixes. Would you like to update now?",
@@ -247,19 +280,232 @@ const useInAppUpdates = () => {
               {
                 text: "Update",
                 isPreferred: true,
-                async onPress() {
-                  await ExpoInAppUpdates.startUpdate();
+                onPress: async () => {
+                  try {
+                    await ExpoInAppUpdates.startUpdate();
+                  } catch (updateErr) {
+                    console.error("Failed to start update:", updateErr);
+                  }
                 },
               },
               { text: "Cancel" },
             ]
           );
         }
+      } catch (err) {
+        console.error("Update check failed:", err);
       }
-    );
+    };
+
+    checkForUpdates();
   }, []);
 };
 ```
+
+---
+
+### Using Update Events
+
+You can listen to various events during the update process to provide a better user experience.
+
+#### Available Events
+
+- `updateStart`: Triggered when an update process has started
+- `updateDownloaded`: Triggered when an update has been downloaded and is ready to install
+- `updateCancelled`: Triggered when the user cancels the update process
+- `updateCompleted`: Triggered when an update has been successfully installed
+
+#### Example with Event Listeners
+
+```tsx
+import { useEffect } from "react";
+import { Alert, Platform, Text, View, StyleSheet } from "react-native";
+import * as ExpoInAppUpdates from "expo-in-app-updates";
+
+const UpdateStatusScreen = () => {
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState("");
+
+  useEffect(() => {
+    if (__DEV__ || Platform.OS === "web") return;
+
+    // Set up event listeners - each returns a cleanup function
+    const startUnsubscribe = ExpoInAppUpdates.addUpdateListener(
+      "updateStart",
+      (event) => {
+        setIsUpdating(true);
+        setUpdateMessage(`Update process started (${event.updateType || "standard"})`);
+      }
+    );
+
+    const downloadedUnsubscribe = ExpoInAppUpdates.addUpdateListener(
+      "updateDownloaded",
+      () => {
+        setUpdateMessage("Update downloaded, ready to install!");
+      }
+    );
+
+    const cancelledUnsubscribe = ExpoInAppUpdates.addUpdateListener(
+      "updateCancelled",
+      (event) => {
+        setIsUpdating(false);
+        setUpdateMessage(`Update cancelled${event.reason ? ": " + event.reason : ""}`);
+      }
+    );
+
+    const completedUnsubscribe = ExpoInAppUpdates.addUpdateListener(
+      "updateCompleted",
+      () => {
+        setIsUpdating(false);
+        setUpdateMessage("Update completed!");
+      }
+    );
+
+    // Check for updates
+    const checkForUpdates = async () => {
+      try {
+        const result = await ExpoInAppUpdates.checkForUpdate();
+        if (result.updateAvailable) {
+          try {
+            await ExpoInAppUpdates.startUpdate(true); // Start immediate update
+          } catch (updateErr) {
+            console.error("Error starting update:", updateErr);
+          }
+        }
+      } catch (checkErr) {
+        console.error("Error checking for updates:", checkErr);
+      }
+    };
+
+    checkForUpdates();
+
+    // Cleanup listeners when component unmounts
+    return () => {
+      startUnsubscribe();
+      downloadedUnsubscribe();
+      cancelledUnsubscribe();
+      completedUnsubscribe();
+    };
+  }, []);
+
+  if (!isUpdating && !updateMessage) {
+    return null;
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>App Update</Text>
+      <Text style={styles.message}>{updateMessage}</Text>
+    </View>
+  );
+};
+```
+
+> [!NOTE]
+> Events are primarily useful on Android, where the update flow can be tracked. On iOS, since updates happen through the App Store, fewer events are supported (mainly `updateStart`, `updateError`, and `updateCancelled`).
+
+---
+
+### Forcing Updates
+
+If you need to enforce critical updates and prevent users from using the app until they update, you can implement a blocking UI when updates are cancelled. This is useful for security fixes or breaking API changes.
+
+```tsx
+import { useEffect } from 'react';
+import { View, Text, StyleSheet, Button, Platform, BackHandler } from 'react-native';
+import * as ExpoInAppUpdates from 'expo-in-app-updates';
+
+// App component with forced update mechanism
+export default function App() {
+  const [showUpdateBlocker, setShowUpdateBlocker] = useState(false);
+
+  useEffect(() => {
+    checkForMandatoryUpdate();
+
+    // Listen for update cancellation
+    const unsubscribeCancelled = ExpoInAppUpdates.addUpdateListener(
+      'updateCancelled',
+      () => {
+        setShowUpdateBlocker(true);
+      }
+    );
+
+    // Prevent back button from dismissing the blocker screen on Android
+    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+      return showUpdateBlocker; // True prevents default behavior
+    });
+
+    // Cleanup
+    return () => {
+      unsubscribeCancelled();
+      backHandler.remove();
+    };
+  }, [showUpdateBlocker]);
+
+  const checkForMandatoryUpdate = async () => {
+    if (__DEV__ || Platform.OS === "web") return;
+
+    try {
+      const result = await ExpoInAppUpdates.checkForUpdate();
+
+      if (result.updateAvailable) {
+        // Use immediate update on Android for more enforcement
+        const updateType = Platform.OS === 'android' ? true : false;
+        try {
+          await ExpoInAppUpdates.startUpdate(updateType);
+        } catch (updateErr) {
+          console.error("Failed to start update:", updateErr);
+          // Even if update fails, we should still block the app to force the user to update
+          setShowUpdateBlocker(true);
+        }
+      }
+    } catch (checkErr) {
+      console.error("Update check failed:", checkErr);
+    }
+  };
+
+  const retryUpdate = async () => {
+    try {
+      await ExpoInAppUpdates.startUpdate(Platform.OS === 'android');
+      setError(null); // Clear any previous errors on retry
+    } catch (retryErr) {
+      console.error("Retry update failed:", retryErr);
+    }
+  };
+
+  // Block access if update was cancelled
+  if (showUpdateBlocker) {
+    return (
+      <View style={styles.blockingContainer}>
+        <Text style={styles.title}>Update Required</Text>
+        <Text style={styles.message}>
+          A critical update is required to continue using the app.
+          Please update to the latest version to access new features and fixes.
+        </Text>
+        <Button title="Update Now" onPress={retryUpdate} />
+      </View>
+    );
+  }
+
+  // Your actual app content
+  return (
+    <View style={styles.container}>
+      <Text>Welcome to the app!</Text>
+      {/* Your app content goes here */}
+    </View>
+  );
+}
+```
+
+This example:
+
+- Detects when a user cancels an update using the event system
+- Shows a blocking screen that prevents app usage
+- Disables the Android back button from dismissing the blocker
+- Provides a simple button to retry the update
+- Uses immediate updates on Android for stronger enforcement
+
+You can enhance this solution by storing version requirements in your backend to control which app versions must be updated.
 
 ---
 

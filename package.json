@@ -29,10 +29,10 @@
   "homepage": "https://github.com/SohelIslamImran/expo-in-app-updates#readme",
   "dependencies": {},
   "devDependencies": {
-    "@biomejs/biome": "1.9.4",
+    "@biomejs/biome": "^1.9.4",
     "@release-it/conventional-changelog": "^10.0.0",
-    "@types/react": "~18.3.12",
-    "expo-module-scripts": "^4.0.3",
+    "@types/react": "~18.3.20",
+    "expo-module-scripts": "^4.0.5",
     "release-it": "^18.1.2"
   },
   "release-it": {
@@ -83,10 +83,7 @@
       }
     },
     "hooks": {
-      "before:init": [
-        "bun lint",
-        "bun run build"
-      ]
+      "before:init": ["bun lint", "bun run build"]
     }
   }
 }
