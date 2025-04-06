@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.10.0-beta.0](https://github.com/SohelIslamImran/expo-in-app-updates/compare/v0.9.0...v0.10.0-beta.0) (2025-04-06)
+
+### ✨ Features
+
+* add event handling for update start, download, cancellation, and completion in both Android and iOS modules. ([fb81137](https://github.com/SohelIslamImran/expo-in-app-updates/commit/fb81137433df196079d9dafd45a120327328fadc))
+
+### 🛠️ Changes in Build Process & Tools
+
+* Update CHANGELOG.md for version 0.9.0 ([4c499c7](https://github.com/SohelIslamImran/expo-in-app-updates/commit/4c499c712c58dc81074a1dd1c405a8eb87a2d6cc))
+
 ## [0.9.0](https://github.com/SohelIslamImran/expo-in-app-updates/compare/v0.7.0...v0.9.0) (2025-02-06)
 
 ### 🐛 Bug Fixes

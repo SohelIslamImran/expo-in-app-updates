@@ -1,11 +1,11 @@
 import { Platform } from "react-native";
 
 import type {
-  UpdateStartEvent,
+  ExpoInAppUpdatesEvents,
   UpdateCancelledEvent,
   UpdateCompletedEvent,
   UpdateDownloadedEvent,
-  ExpoInAppUpdatesEvents,
+  UpdateStartEvent,
 } from "./ExpoInAppUpdates.types";
 import ExpoInAppUpdatesModule from "./ExpoInAppUpdatesModule";
 
