@@ -402,7 +402,7 @@ const UpdateStatusScreen = () => {
 ```
 
 > [!NOTE]
-> Events are primarily useful on Android, where the update flow can be tracked. On iOS, since updates happen through the App Store, fewer events are supported (mainly `updateStart`, `updateError`, and `updateCancelled`).
+> Events are primarily useful on Android, where the update flow can be tracked. On iOS, since updates happen through the App Store, fewer events are supported (mainly `updateStart` and `updateCancelled`).
 
 ---
 
@@ -450,9 +450,8 @@ export default function App() {
 
       if (result.updateAvailable) {
         // Use immediate update on Android for more enforcement
-        const updateType = Platform.OS === 'android' ? true : false;
         try {
-          await ExpoInAppUpdates.startUpdate(updateType);
+          await ExpoInAppUpdates.startUpdate(true);
         } catch (updateErr) {
           console.error("Failed to start update:", updateErr);
           // Even if update fails, we should still block the app to force the user to update
