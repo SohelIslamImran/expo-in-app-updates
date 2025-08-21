@@ -18,7 +18,8 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 
 class ExpoInAppUpdatesModule : Module() {
     private lateinit var appUpdateManager: AppUpdateManager
-    private val requestCode = 100
+    private const val requestCode = 100
+    private const val PRIORITY_THRESHOLD_IMMEDIATE = 4
 
     // Event constants
     companion object {
@@ -34,6 +35,21 @@ class ExpoInAppUpdatesModule : Module() {
             setPackage("com.android.vending")
         }
         appContext.currentActivity?.startActivity(intent)
+    }
+
+    private fun chooseFinalUpdateType(info: AppUpdateInfo, requested: Int?): Int? {
+        if (requested != null) {
+            return if (info.isUpdateTypeAllowed(requested)) requested else null
+        }
+        val priority = info.updatePriority()
+        val derived = if (priority >= PRIORITY_THRESHOLD_IMMEDIATE) AppUpdateType.IMMEDIATE else AppUpdateType.FLEXIBLE
+        return when {
+            info.isUpdateTypeAllowed(derived) -> derived
+            // Optional graceful fallback order:
+            info.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE) -> AppUpdateType.FLEXIBLE
+            info.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) -> AppUpdateType.IMMEDIATE
+            else -> null
+        }
     }
 
     private val listener = InstallStateUpdatedListener { state ->
@@ -93,9 +109,7 @@ class ExpoInAppUpdatesModule : Module() {
                     appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE -> {
                         val updatePriority = appUpdateInfo.updatePriority()
                         val updateTypeStr = when {
-                            updatePriority >= 4 -> {
-                                "IMMEDIATE"
-                            }
+                            updatePriority >= PRIORITY_THRESHOLD_IMMEDIATE -> "IMMEDIATE"
                             else "FLEXIBLE"
                         }
                         promise.resolve(mapOf(
@@ -127,28 +141,10 @@ class ExpoInAppUpdatesModule : Module() {
             val appUpdateInfoTask = appUpdateManager.appUpdateInfo
             appUpdateInfoTask.addOnSuccessListener { appUpdateInfo: AppUpdateInfo ->
                 if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
-                    var finalUpdateType: Int
-                    if (updateType != null) {
-                        if (!appUpdateInfo.isUpdateTypeAllowed(updateType)) {
-                            promise.resolve(false)
-                            return@addOnSuccessListener
-                        }
-                        finalUpdateType = updateType
-                    }
-                    else {
-                        // use a distributed priority when no value is specified
-                        val updatePriority = appUpdateInfo.updatePriority()
-                        val derived = if (updatePriority >= 4) AppUpdateType.IMMEDIATE else AppUpdateType.FLEXIBLE
-                        finalUpdateType = when {
-                            appUpdateInfo.isUpdateTypeAllowed(derived) -> derived
-                            // Optional graceful fallback order:
-                            appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE) -> AppUpdateType.FLEXIBLE
-                            appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) -> AppUpdateType.IMMEDIATE
-                            else -> {
-                                promise.resolve(false)
-                                return@addOnSuccessListener
-                            }
-                        }
+                    val finalUpdateType = chooseFinalUpdateType(appUpdateInfo, updateType)
+                    if (finalUpdateType == null) {
+                        promise.resolve(false)
+                        return@addOnSuccessListener
                     }
                     // Send update start event
                     val updateTypeName = if (finalUpdateType == AppUpdateType.FLEXIBLE) "FLEXIBLE" else "IMMEDIATE"
