@@ -43,6 +43,18 @@ export type ExpoInAppUpdatesModuleType = {
      * If able to start an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate)
      * @platform android */
     immediateAllowed?: boolean;
+
+    /**
+     * Update priority received from Play Store
+     * @platform android
+     */
+    serverPriority?: number;
+
+    /**
+     * Update type calculated from serverPriority
+     * @platform android
+     */
+    serverUpdateType?: "FLEXIBLE" | "IMMEDIATE";
   }>;
 
   /**

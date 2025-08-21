@@ -91,12 +91,21 @@ class ExpoInAppUpdatesModule : Module() {
             appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
                 when {
                     appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE -> {
+                        val updatePriority = appUpdateInfo.updatePriority()
+                        val updateTypeStr = when {
+                            updatePriority >= 4 -> {
+                                "IMMEDIATE"
+                            }
+                            else "FLEXIBLE"
+                        }
                         promise.resolve(mapOf(
                             "updateAvailable" to true,
                             "immediateAllowed" to appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE),
                             "flexibleAllowed" to appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE),
                             "daysSinceRelease" to appUpdateInfo.clientVersionStalenessDays(),
-                            "storeVersion" to appUpdateInfo.availableVersionCode().toString()
+                            "storeVersion" to appUpdateInfo.availableVersionCode().toString(),
+                            "serverPriority" to updatePriority,
+                            "serverUpdateType" to updateTypeStr
                         ))
                     }
                     appUpdateInfo.updateAvailability() == UpdateAvailability.DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS -> {
@@ -114,18 +123,39 @@ class ExpoInAppUpdatesModule : Module() {
             }
         }
 
-        AsyncFunction("startUpdate") { updateType: Int, promise: Promise ->
+        AsyncFunction("startUpdate") { updateType: Int?, promise: Promise ->
             val appUpdateInfoTask = appUpdateManager.appUpdateInfo
             appUpdateInfoTask.addOnSuccessListener { appUpdateInfo: AppUpdateInfo ->
-                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                    && appUpdateInfo.isUpdateTypeAllowed(updateType)
-                ) {
+                if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE) {
+                    var finalUpdateType: Int
+                    if (updateType != null) {
+                        if (!appUpdateInfo.isUpdateTypeAllowed(updateType)) {
+                            promise.resolve(false)
+                            return@addOnSuccessListener
+                        }
+                        finalUpdateType = updateType
+                    }
+                    else {
+                        // use a distributed priority when no value is specified
+                        val updatePriority = appUpdateInfo.updatePriority()
+                        val derived = if (updatePriority >= 4) AppUpdateType.IMMEDIATE else AppUpdateType.FLEXIBLE
+                        finalUpdateType = when {
+                            appUpdateInfo.isUpdateTypeAllowed(derived) -> derived
+                            // Optional graceful fallback order:
+                            appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE) -> AppUpdateType.FLEXIBLE
+                            appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE) -> AppUpdateType.IMMEDIATE
+                            else -> {
+                                promise.resolve(false)
+                                return@addOnSuccessListener
+                            }
+                        }
+                    }
                     // Send update start event
-                    val updateTypeName = if (updateType == AppUpdateType.FLEXIBLE) "FLEXIBLE" else "IMMEDIATE"
+                    val updateTypeName = if (finalUpdateType == AppUpdateType.FLEXIBLE) "FLEXIBLE" else "IMMEDIATE"
                     sendEvent(EVENT_UPDATE_START, mapOf("updateType" to updateTypeName))
 
                     appContext.currentActivity?.let { activity ->
-                        val appUpdateOptions = AppUpdateOptions.newBuilder(updateType)
+                        val appUpdateOptions = AppUpdateOptions.newBuilder(finalUpdateType)
                             .setAllowAssetPackDeletion(true)
                             .build()
 
