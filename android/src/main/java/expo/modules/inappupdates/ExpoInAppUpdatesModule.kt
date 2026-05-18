@@ -3,6 +3,7 @@ package expo.modules.inappupdates
 import android.net.Uri
 import android.app.Activity
 import android.content.Intent
+import android.content.IntentSender
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -155,9 +156,18 @@ class ExpoInAppUpdatesModule : Module() {
                             .setAllowAssetPackDeletion(true)
                             .build()
 
-                        appUpdateManager.startUpdateFlowForResult(appUpdateInfo, activity, appUpdateOptions, requestCode)
-
-                        promise.resolve(true)
+                        try {
+                            appUpdateManager.startUpdateFlowForResult(appUpdateInfo, activity, appUpdateOptions, requestCode)
+                            promise.resolve(true)
+                        } catch (e: IntentSender.SendIntentException) {
+                            promise.reject(
+                                CodedException("Failed to start update flow (SendIntentException): ${e.message}", e)
+                            )
+                        } catch (e: Exception) {
+                            promise.reject(
+                                CodedException("Failed to start update flow: ${e.message}", e)
+                            )
+                        }
                     } ?: run {
                         promise.reject(CodedException("Current activity is null"))
                     }
