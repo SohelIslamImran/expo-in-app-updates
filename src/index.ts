@@ -35,10 +35,14 @@ export async function checkForUpdate() {
  *
  * @return Whether the update was started successfully.
  */
-export async function startUpdate(isImmediate = false) {
+export async function startUpdate(isImmediate?: boolean) {
   if (Platform.OS === "android") {
     return ExpoInAppUpdatesModule.startUpdate(
-      isImmediate ? AppUpdateType.IMMEDIATE : AppUpdateType.FLEXIBLE
+      isImmediate === undefined
+        ? undefined
+        : isImmediate
+          ? AppUpdateType.IMMEDIATE
+          : AppUpdateType.FLEXIBLE
     );
   }
   return ExpoInAppUpdatesModule.startUpdate();
@@ -54,7 +58,7 @@ export async function startUpdate(isImmediate = false) {
 export async function checkAndStartUpdate(isImmediate = false) {
   const { updateAvailable, immediateAllowed } = await checkForUpdate();
   if (updateAvailable) {
-    return startUpdate(isImmediate && immediateAllowed);
+    return startUpdate((isImmediate && immediateAllowed)? true : undefined);
   }
   return false;
 }

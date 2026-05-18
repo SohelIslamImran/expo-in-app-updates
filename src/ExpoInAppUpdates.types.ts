@@ -31,7 +31,7 @@ export type ExpoInAppUpdatesModuleType = {
      * If update is not available, or if staleness information is unavailable, this will be null.
      *
      * @platform android */
-    daysSinceRelease?: string | null;
+    daysSinceRelease?: number | null;
 
     /**
      * If able to start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible)
@@ -43,6 +43,18 @@ export type ExpoInAppUpdatesModuleType = {
      * If able to start an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate)
      * @platform android */
     immediateAllowed?: boolean;
+
+    /**
+     * Update priority received from Play Store
+     * @platform android
+     */
+    serverPriority?: number;
+
+    /**
+     * Update type calculated from serverPriority
+     * @platform android
+     */
+    serverUpdateType?: "FLEXIBLE" | "IMMEDIATE";
   }>;
 
   /**
