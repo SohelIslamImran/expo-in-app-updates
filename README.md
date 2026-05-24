@@ -51,18 +51,22 @@ const {
   immediateAllowed,
   storeVersion,
   releaseDate,
-  daysSinceRelease
+  daysSinceRelease,
+  serverPriority,
+  serverUpdateType
 } = await ExpoInAppUpdates.checkForUpdate();
 ```
 
-Checks if an app update is available. Return a promise that resolves `updateAvailable` and `storeVersion` for Android and iOS, `flexibleAllowed` and `immediateAllowed` for Android.
+Checks if an app update is available. Return a promise that resolves `updateAvailable` and `storeVersion` for Android and iOS, `flexibleAllowed`, `immediateAllowed`, `daysSinceRelease`, `serverPriority`, and `serverUpdateType` for Android.
 
 - `updateAvailable`: If an update is available.
 - `flexibleAllowed`: If able to start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible) (Android)
 - `immediateAllowed`: If able to start an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) (Android)
 - `storeVersion`: The latest app version published in the App Store / Play Store. On Android, this is the `versionCode` that you defined in `app.json`.
 - `releaseDate`: The release date of the current version of the app (iOS)
-- `daysSinceRelease`: The value of the [clientVersionStalenessDays](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#clientVersionStalenessDays()). If an update is available or in progress, this will be the number of days since the Google Play Store app on the user's device has learnt about an available update. If update is not available, or if staleness information is unavailable, this will be null. (Android)
+- `daysSinceRelease`: The value of the [clientVersionStalenessDays](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#clientVersionStalenessDays()). If an update is available or in progress, this will be the number of days since the Google Play Store app on the user's device has learnt about an available update. If update is not available, or if staleness information is unavailable, this will be `null`. (Android)
+- `serverPriority`: The update priority received from Google Play. (Android)
+- `serverUpdateType`: The update type suggested from `serverPriority`. Values are `"IMMEDIATE"` for priority 4 or higher and `"FLEXIBLE"` for lower priorities. This is a priority-based suggestion, so also check `immediateAllowed` and `flexibleAllowed` before showing custom UI that depends on a specific update type. (Android)
 
 ### Start an in-app update
 
@@ -73,7 +77,7 @@ const isUpdateStarted = await ExpoInAppUpdates.startUpdate();
 Starts an in-app update. Return a boolean whether the update was started successfully.
 
 > [!NOTE]
-> If you want an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) that will cover the app with the update overlay, pass true to this function. By default, it will start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible). More details : <https://developer.android.com/guide/playcore/in-app-updates#update-flows>
+> If you call this function without an argument on Android, the native module selects the update type from the Play Store priority: priority 4 or higher starts an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate), while lower priorities start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible). Pass `true` to request an immediate update, or `false` to request a flexible update. More details: <https://developer.android.com/guide/playcore/in-app-updates#update-flows>
 >
 > ```ts
 > const isUpdateStarted = await ExpoInAppUpdates.startUpdate(true);
@@ -88,7 +92,7 @@ const isUpdateStarted = await ExpoInAppUpdates.checkAndStartUpdate();
 Checks if an app update is available and starts the update process if necessary. Return a boolean whether the update was started successfully.
 
 > [!NOTE]
-> If you want an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) that will cover the app with the update overlay, pass true to this function. By default, it will start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible). More details : <https://developer.android.com/guide/playcore/in-app-updates#update-flows>
+> If you call this function without an argument on Android, the native module selects the update type from the Play Store priority. Pass `true` to request an immediate update when it is allowed. More details: <https://developer.android.com/guide/playcore/in-app-updates#update-flows>
 >
 > ```ts
 > const isUpdateStarted = await ExpoInAppUpdates.checkAndStartUpdate(true);
@@ -114,9 +118,8 @@ const useInAppUpdates = () => {
     const checkForUpdates = async () => {
       try {
         if (Platform.OS === "android") {
-          // If you want an immediate update that will cover the app with the update overlay, set it to true.
-          // More details: https://developer.android.com/guide/playcore/in-app-updates#update-flows
-          await ExpoInAppUpdates.checkAndStartUpdate(false);
+          // Without an argument, Android chooses flexible or immediate from the Play Store priority.
+          await ExpoInAppUpdates.checkAndStartUpdate();
         } else {
           const result = await ExpoInAppUpdates.checkForUpdate();
 
