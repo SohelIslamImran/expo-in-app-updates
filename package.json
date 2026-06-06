@@ -5,12 +5,12 @@
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "build": "expo-module build",
-    "clean": "expo-module clean",
+    "build": "bunx expo-module-scripts build",
+    "clean": "bunx expo-module-scripts clean",
     "lint": "biome check --fix",
     "release": "release-it",
-    "prepare": "expo-module prepare",
-    "prepublishOnly": "expo-module prepublishOnly",
+    "prepare": "bunx expo-module-scripts prepare",
+    "prepublishOnly": "bunx expo-module-scripts prepublishOnly",
     "open:ios": "xed example/ios",
     "open:android": "open -a \"Android Studio\" example/android"
   },
