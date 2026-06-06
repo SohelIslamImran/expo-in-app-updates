@@ -1,7 +1,6 @@
+import * as ExpoInAppUpdates from "expo-in-app-updates";
 import { useEffect } from "react";
 import { Alert, Platform, StyleSheet, Text, View } from "react-native";
-
-import * as ExpoInAppUpdates from "expo-in-app-updates";
 
 const useInAppUpdates = () => {
   useEffect(() => {

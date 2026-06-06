@@ -1,6 +1,6 @@
 {
   "name": "expo-in-app-updates",
-  "version": "0.10.0-beta.0",
+  "version": "0.10.0",
   "description": "Native in-app updates for Android and iOS",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -28,12 +28,16 @@
   "license": "MIT",
   "homepage": "https://github.com/SohelIslamImran/expo-in-app-updates#readme",
   "dependencies": {},
+  "peerDependencies": {
+    "expo": "*"
+  },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@release-it/conventional-changelog": "^10.0.0",
-    "@types/react": "~18.3.20",
-    "expo-module-scripts": "^4.0.5",
-    "release-it": "^18.1.2"
+    "@biomejs/biome": "^2.4.16",
+    "@release-it/conventional-changelog": "^11.0.1",
+    "@types/react": "~19.2.17",
+    "expo": "~56.0.9",
+    "expo-module-scripts": "^56.0.3",
+    "release-it": "^20.2.0"
   },
   "release-it": {
     "git": {
@@ -83,7 +87,10 @@
       }
     },
     "hooks": {
-      "before:init": ["bun lint", "bun run build"]
+      "before:init": [
+        "bun lint",
+        "bun run build"
+      ]
     }
   }
 }

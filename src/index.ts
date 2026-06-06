@@ -58,7 +58,7 @@ export async function startUpdate(isImmediate?: boolean) {
 export async function checkAndStartUpdate(isImmediate = false) {
   const { updateAvailable, immediateAllowed } = await checkForUpdate();
   if (updateAvailable) {
-    return startUpdate((isImmediate && immediateAllowed)? true : undefined);
+    return startUpdate(isImmediate && immediateAllowed ? true : undefined);
   }
   return false;
 }
@@ -79,8 +79,8 @@ export function addUpdateListener<K extends keyof ExpoInAppUpdatesEvents>(
 
 // Export event types
 export type {
-  UpdateStartEvent,
-  UpdateDownloadedEvent,
   UpdateCancelledEvent,
   UpdateCompletedEvent,
+  UpdateDownloadedEvent,
+  UpdateStartEvent,
 };
