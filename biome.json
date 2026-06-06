@@ -1,16 +1,19 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "$schema": "node_modules/@biomejs/biome/configuration_schema.json",
   "formatter": {
     "enabled": true,
     "indentWidth": 2,
     "indentStyle": "space"
   },
-  "organizeImports": {
-    "enabled": true
-  },
+  "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
     "enabled": true,
-    "ignore": ["babel.config.js", "metro.config.js", "webpack.config.js"],
+    "includes": [
+      "**",
+      "!**/babel.config.js",
+      "!**/metro.config.js",
+      "!**/webpack.config.js"
+    ],
     "rules": {
       "recommended": true
     }
