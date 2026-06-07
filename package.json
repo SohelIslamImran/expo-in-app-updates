@@ -1,6 +1,6 @@
 {
   "name": "expo-in-app-updates",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Native in-app updates for Android and iOS",
   "keywords": [
     "ExpoInAppUpdates",
