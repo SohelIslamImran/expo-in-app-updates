@@ -1,21 +1,10 @@
 # Changelog
 
-## [0.12.0](https://github.com/SohelIslamImran/expo-in-app-updates/compare/v0.10.0-beta.0...v0.12.0) (2026-06-07)
-
-### ✨ Features
-
-* add [#23](https://github.com/SohelIslamImran/expo-in-app-updates/issues/23) to the document ([#28](https://github.com/SohelIslamImran/expo-in-app-updates/issues/28)) ([b79a2c0](https://github.com/SohelIslamImran/expo-in-app-updates/commit/b79a2c0a7cbc1dc217dc17fb9029b1bfc4a362f7))
-* use PlayStore API's `updatePriority()` value as a default ([#23](https://github.com/SohelIslamImran/expo-in-app-updates/issues/23)) ([c0805f8](https://github.com/SohelIslamImran/expo-in-app-updates/commit/c0805f853e9be13491bf9fff2b22f47bce8f4082))
+## [0.12.0](https://github.com/SohelIslamImran/expo-in-app-updates/compare/v0.11.0...v0.12.0) (2026-06-07)
 
 ### 🐛 Bug Fixes
 
-* **android:** wrap startUpdateFlowForResult in try/catch to prevent SendIntentException crash ([#26](https://github.com/SohelIslamImran/expo-in-app-updates/issues/26)) ([2b44e20](https://github.com/SohelIslamImran/expo-in-app-updates/commit/2b44e20e78f3968faf927a6267042f9805aab249))
-* resolve android build and refresh example ([47e48f4](https://github.com/SohelIslamImran/expo-in-app-updates/commit/47e48f4a251e8847920d14945397ed9b3afeb470))
-
-### 🛠️ Changes in Build Process & Tools
-
-* replace biome configuration with oxfmt and oxlint, update .npmignore, and remove biome.json ([fed1874](https://github.com/SohelIslamImran/expo-in-app-updates/commit/fed1874b66397302ed474f44576a8362ac438f14))
-* upgrade expo module to sdk 56 ([#30](https://github.com/SohelIslamImran/expo-in-app-updates/issues/30)) ([4068342](https://github.com/SohelIslamImran/expo-in-app-updates/commit/40683428dbdc84bb13f58d9ce6c7d63602bbf15f))
+* **android:** Fix Android build and refresh Expo example (#32)
 
 ## [0.11.0](https://github.com/SohelIslamImran/expo-in-app-updates/compare/v0.10.0-beta.0...v0.11.0) (2026-06-06)
 
