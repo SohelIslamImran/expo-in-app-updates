@@ -1,6 +1,7 @@
 {
   "name": "expo-in-app-updates-example",
   "version": "1.0.0",
+  "private": true,
   "main": "expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -19,7 +20,6 @@
     "@types/react": "~19.2.17",
     "typescript": "^6.0.3"
   },
-  "private": true,
   "expo": {
     "autolinking": {
       "nativeModulesDir": ".."

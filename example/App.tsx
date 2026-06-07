@@ -34,7 +34,9 @@ export default function App() {
   useEffect(() => {
     const removeListeners = [
       ExpoInAppUpdates.addUpdateListener("updateStart", (event) => {
-        appendEvent(`Update started${event.updateType ? ` (${event.updateType})` : ""}`);
+        appendEvent(
+          `Update started${event.updateType ? ` (${event.updateType})` : ""}`
+        );
       }),
       ExpoInAppUpdates.addUpdateListener("updateDownloaded", () => {
         appendEvent("Update downloaded");
@@ -66,7 +68,9 @@ export default function App() {
 
   const checkForUpdate = async () => {
     if (__DEV__) {
-      setMessage("In-app updates only return real store data in release builds.");
+      setMessage(
+        "In-app updates only return real store data in release builds."
+      );
     }
 
     setStatus("Checking");
@@ -83,7 +87,9 @@ export default function App() {
       );
     } catch (error) {
       setStatus("Error");
-      setMessage(error instanceof Error ? error.message : "Failed to check for updates.");
+      setMessage(
+        error instanceof Error ? error.message : "Failed to check for updates."
+      );
     }
   };
 
@@ -100,7 +106,9 @@ export default function App() {
       );
     } catch (error) {
       setStatus("Error");
-      setMessage(error instanceof Error ? error.message : "Failed to start update.");
+      setMessage(
+        error instanceof Error ? error.message : "Failed to start update."
+      );
     }
   };
 
@@ -118,7 +126,8 @@ export default function App() {
           <Text style={styles.eyebrow}>Expo module example</Text>
           <Text style={styles.title}>In-app updates</Text>
           <Text style={styles.subtitle}>
-            Validate Play Core update flows on Android and App Store redirects on iOS.
+            Validate Play Core update flows on Android and App Store redirects
+            on iOS.
           </Text>
         </View>
 
@@ -135,15 +144,30 @@ export default function App() {
           {updateInfo ? (
             <View style={styles.details}>
               <Detail label="Update type" value={updateTypeLabel} />
-              <Detail label="Store version" value={updateInfo.storeVersion ?? "Unavailable"} />
+              <Detail
+                label="Store version"
+                value={updateInfo.storeVersion ?? "Unavailable"}
+              />
               {isAndroid ? (
                 <>
-                  <Detail label="Flexible allowed" value={String(Boolean(updateInfo.flexibleAllowed))} />
-                  <Detail label="Immediate allowed" value={String(Boolean(updateInfo.immediateAllowed))} />
-                  <Detail label="Priority" value={String(updateInfo.serverPriority ?? "None")} />
+                  <Detail
+                    label="Flexible allowed"
+                    value={String(Boolean(updateInfo.flexibleAllowed))}
+                  />
+                  <Detail
+                    label="Immediate allowed"
+                    value={String(Boolean(updateInfo.immediateAllowed))}
+                  />
+                  <Detail
+                    label="Priority"
+                    value={String(updateInfo.serverPriority ?? "None")}
+                  />
                 </>
               ) : (
-                <Detail label="Release date" value={String(updateInfo.releaseDate ?? "Unavailable")} />
+                <Detail
+                  label="Release date"
+                  value={String(updateInfo.releaseDate ?? "Unavailable")}
+                />
               )}
             </View>
           ) : null}
@@ -219,7 +243,9 @@ function ActionButton({
         pressed && !disabled ? styles.buttonPressed : null,
       ]}
     >
-      <Text style={[styles.buttonText, disabled ? styles.buttonTextDisabled : null]}>
+      <Text
+        style={[styles.buttonText, disabled ? styles.buttonTextDisabled : null]}
+      >
         {label}
       </Text>
     </Pressable>

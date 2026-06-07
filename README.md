@@ -53,7 +53,7 @@ const {
   releaseDate,
   daysSinceRelease,
   serverPriority,
-  serverUpdateType
+  serverUpdateType,
 } = await ExpoInAppUpdates.checkForUpdate();
 ```
 
@@ -64,7 +64,7 @@ Checks if an app update is available. Return a promise that resolves `updateAvai
 - `immediateAllowed`: If able to start an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) (Android)
 - `storeVersion`: The latest app version published in the App Store / Play Store. On Android, this is the `versionCode` that you defined in `app.json`.
 - `releaseDate`: The release date of the current version of the app (iOS)
-- `daysSinceRelease`: The value of the [clientVersionStalenessDays](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#clientVersionStalenessDays()). If an update is available or in progress, this will be the number of days since the Google Play Store app on the user's device has learnt about an available update. If update is not available, or if staleness information is unavailable, this will be `null`. (Android)
+- `daysSinceRelease`: The value of the [clientVersionStalenessDays](<https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#clientVersionStalenessDays()>). If an update is available or in progress, this will be the number of days since the Google Play Store app on the user's device has learnt about an available update. If update is not available, or if staleness information is unavailable, this will be `null`. (Android)
 - `serverPriority`: The update priority received from Google Play. (Android)
 - `serverUpdateType`: The update type suggested from `serverPriority`. Values are `"IMMEDIATE"` for priority 4 or higher and `"FLEXIBLE"` for lower priorities. This is a priority-based suggestion, so also check `immediateAllowed` and `flexibleAllowed` before showing custom UI that depends on a specific update type. (Android)
 
@@ -186,7 +186,8 @@ const useInAppUpdates = () => {
         if (!result.updateAvailable) return;
 
         // Get the last saved storeVersion from your local-storage (AsyncStorage/MMKV)
-        const savedStoreVersion = await AsyncStorage.getItem("savedStoreVersion");
+        const savedStoreVersion =
+          await AsyncStorage.getItem("savedStoreVersion");
         // Check and return from here to prevent asking for updates again for the same storeVersion.
         if (savedStoreVersion === result.storeVersion) return;
 
@@ -194,7 +195,10 @@ const useInAppUpdates = () => {
           try {
             await ExpoInAppUpdates.startUpdate();
             // Saving the storeVersion after checked for updates, so we can check and ignore asking for updates again for the same storeVersion
-            await AsyncStorage.setItem("savedStoreVersion", result.storeVersion);
+            await AsyncStorage.setItem(
+              "savedStoreVersion",
+              result.storeVersion
+            );
           } catch (updateErr) {
             console.error("Failed to start update:", updateErr);
           }
@@ -211,7 +215,10 @@ const useInAppUpdates = () => {
               onPress: async () => {
                 try {
                   await ExpoInAppUpdates.startUpdate();
-                  await AsyncStorage.setItem("savedStoreVersion", result.storeVersion);
+                  await AsyncStorage.setItem(
+                    "savedStoreVersion",
+                    result.storeVersion
+                  );
                 } catch (updateErr) {
                   console.error("Failed to start update:", updateErr);
                 }
@@ -222,7 +229,10 @@ const useInAppUpdates = () => {
               onPress: async () => {
                 try {
                   // Saving the storeVersion after checked for updates, so we can check and ignore asking for updates again for the same storeVersion
-                  await AsyncStorage.setItem("savedStoreVersion", result.storeVersion);
+                  await AsyncStorage.setItem(
+                    "savedStoreVersion",
+                    result.storeVersion
+                  );
                 } catch (storageErr) {
                   console.error("Failed to save version:", storageErr);
                 }
@@ -265,7 +275,7 @@ const useInAppUpdates = () => {
         if (!result.updateAvailable) return;
 
         // Check and prevent asking for updates for 2 days after release
-        if (Platform.OS === "android" && ((result.daysSinceRelease??0) >= 2)) {
+        if (Platform.OS === "android" && (result.daysSinceRelease ?? 0) >= 2) {
           try {
             await ExpoInAppUpdates.startUpdate();
           } catch (updateErr) {
@@ -337,7 +347,9 @@ const UpdateStatusScreen = () => {
       "updateStart",
       (event) => {
         setIsUpdating(true);
-        setUpdateMessage(`Update process started (${event.updateType || "standard"})`);
+        setUpdateMessage(
+          `Update process started (${event.updateType || "standard"})`
+        );
       }
     );
 
@@ -352,7 +364,9 @@ const UpdateStatusScreen = () => {
       "updateCancelled",
       (event) => {
         setIsUpdating(false);
-        setUpdateMessage(`Update cancelled${event.reason ? ": " + event.reason : ""}`);
+        setUpdateMessage(
+          `Update cancelled${event.reason ? ": " + event.reason : ""}`
+        );
       }
     );
 
@@ -414,9 +428,16 @@ const UpdateStatusScreen = () => {
 If you need to enforce critical updates and prevent users from using the app until they update, you can implement a blocking UI when updates are cancelled. This is useful for security fixes or breaking API changes.
 
 ```tsx
-import { useEffect } from 'react';
-import { View, Text, StyleSheet, Button, Platform, BackHandler } from 'react-native';
-import * as ExpoInAppUpdates from 'expo-in-app-updates';
+import { useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  Platform,
+  BackHandler,
+} from "react-native";
+import * as ExpoInAppUpdates from "expo-in-app-updates";
 
 // App component with forced update mechanism
 export default function App() {
@@ -427,16 +448,19 @@ export default function App() {
 
     // Listen for update cancellation
     const unsubscribeCancelled = ExpoInAppUpdates.addUpdateListener(
-      'updateCancelled',
+      "updateCancelled",
       () => {
         setShowUpdateBlocker(true);
       }
     );
 
     // Prevent back button from dismissing the blocker screen on Android
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      return showUpdateBlocker; // True prevents default behavior
-    });
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      () => {
+        return showUpdateBlocker; // True prevents default behavior
+      }
+    );
 
     // Cleanup
     return () => {
@@ -468,7 +492,7 @@ export default function App() {
 
   const retryUpdate = async () => {
     try {
-      await ExpoInAppUpdates.startUpdate(Platform.OS === 'android');
+      await ExpoInAppUpdates.startUpdate(Platform.OS === "android");
       setError(null); // Clear any previous errors on retry
     } catch (retryErr) {
       console.error("Retry update failed:", retryErr);
@@ -481,8 +505,8 @@ export default function App() {
       <View style={styles.blockingContainer}>
         <Text style={styles.title}>Update Required</Text>
         <Text style={styles.message}>
-          A critical update is required to continue using the app.
-          Please update to the latest version to access new features and fixes.
+          A critical update is required to continue using the app. Please update
+          to the latest version to access new features and fixes.
         </Text>
         <Button title="Update Now" onPress={retryUpdate} />
       </View>
