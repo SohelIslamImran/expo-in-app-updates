@@ -8,7 +8,8 @@ __mocks__
 __tests__
 
 .eslintrc.js
-/biome.json
+/.oxfmtrc.json
+/.oxlintrc.json
 /babel.config.js
 /android/src/androidTest/
 /android/src/test/

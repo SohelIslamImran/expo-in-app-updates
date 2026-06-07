@@ -19,11 +19,11 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 
 class ExpoInAppUpdatesModule : Module() {
     private lateinit var appUpdateManager: AppUpdateManager
-    private const val requestCode = 100
-    private const val PRIORITY_THRESHOLD_IMMEDIATE = 4
 
     // Event constants
     companion object {
+        private const val REQUEST_CODE = 100
+        private const val PRIORITY_THRESHOLD_IMMEDIATE = 4
         private const val EVENT_UPDATE_START = "updateStart"
         private const val EVENT_UPDATE_DOWNLOADED = "updateDownloaded"
         private const val EVENT_UPDATE_CANCELLED = "updateCancelled"
@@ -111,7 +111,7 @@ class ExpoInAppUpdatesModule : Module() {
                         val updatePriority = appUpdateInfo.updatePriority()
                         val updateTypeStr = when {
                             updatePriority >= PRIORITY_THRESHOLD_IMMEDIATE -> "IMMEDIATE"
-                            else "FLEXIBLE"
+                            else -> "FLEXIBLE"
                         }
                         promise.resolve(mapOf(
                             "updateAvailable" to true,
@@ -157,7 +157,7 @@ class ExpoInAppUpdatesModule : Module() {
                             .build()
 
                         try {
-                            appUpdateManager.startUpdateFlowForResult(appUpdateInfo, activity, appUpdateOptions, requestCode)
+                            appUpdateManager.startUpdateFlowForResult(appUpdateInfo, activity, appUpdateOptions, REQUEST_CODE)
                             promise.resolve(true)
                         } catch (e: IntentSender.SendIntentException) {
                             promise.reject(
@@ -180,7 +180,7 @@ class ExpoInAppUpdatesModule : Module() {
         }
 
         OnActivityResult { _, activityResult ->
-            if (activityResult.requestCode == requestCode) {
+            if (activityResult.requestCode == REQUEST_CODE) {
                 if (activityResult.resultCode != Activity.RESULT_OK) {
                     if (activityResult.resultCode == Activity.RESULT_CANCELED) {
                         // User canceled the update

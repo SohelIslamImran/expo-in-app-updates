@@ -1,43 +1,47 @@
 {
   "name": "expo-in-app-updates",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Native in-app updates for Android and iOS",
+  "keywords": [
+    "ExpoInAppUpdates",
+    "expo",
+    "expo-in-app-updates",
+    "react-native"
+  ],
+  "homepage": "https://github.com/SohelIslamImran/expo-in-app-updates#readme",
+  "bugs": {
+    "url": "https://github.com/SohelIslamImran/expo-in-app-updates/issues"
+  },
+  "license": "MIT",
+  "author": "SohelIslamImran <sohelislamimran@gmail.com> (https://github.com/SohelIslamImran)",
+  "repository": "https://github.com/SohelIslamImran/expo-in-app-updates",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
     "build": "bunx expo-module-scripts build",
     "clean": "bunx expo-module-scripts clean",
-    "lint": "biome check --fix",
+    "lint": "oxlint src example && oxfmt --check",
+    "lint:fix": "oxlint --fix src example",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
     "release": "release-it",
     "prepare": "bunx expo-module-scripts prepare",
     "prepublishOnly": "bunx expo-module-scripts prepublishOnly",
     "open:ios": "xed example/ios",
     "open:android": "open -a \"Android Studio\" example/android"
   },
-  "keywords": [
-    "react-native",
-    "expo",
-    "expo-in-app-updates",
-    "ExpoInAppUpdates"
-  ],
-  "repository": "https://github.com/SohelIslamImran/expo-in-app-updates",
-  "bugs": {
-    "url": "https://github.com/SohelIslamImran/expo-in-app-updates/issues"
-  },
-  "author": "SohelIslamImran <sohelislamimran@gmail.com> (https://github.com/SohelIslamImran)",
-  "license": "MIT",
-  "homepage": "https://github.com/SohelIslamImran/expo-in-app-updates#readme",
   "dependencies": {},
-  "peerDependencies": {
-    "expo": "*"
-  },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16",
     "@release-it/conventional-changelog": "^11.0.1",
     "@types/react": "~19.2.17",
     "expo": "~56.0.9",
     "expo-module-scripts": "^56.0.3",
+    "oxfmt": "^0.53.0",
+    "oxlint": "^1.68.0",
     "release-it": "^20.2.0"
+  },
+  "peerDependencies": {
+    "expo": "*"
   },
   "release-it": {
     "git": {
