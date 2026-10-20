@@ -20,6 +20,16 @@ On Android, it displays a native Google Play overlay (flexible or immediate upda
 
 Under the hood, iOS native code uses Expo Modules 2.0 macros (`@ExpoModule`, `@JS`, `@Event`, `@Record`), and Android uses `expo-module-gradle-plugin` with Kotlin coroutines.
 
+### Upgrading from 0.12
+
+The JS API is unchanged, but a few details changed:
+
+- iOS errors have specific codes instead of `ERROR`: `ERR_MISSING_APP_STORE_ID`, `ERR_LOOKUP_FAILED` and `ERR_PRESENTATION_FAILED`.
+- On iOS, `startUpdate()` resolves `false` instead of rejecting when the App Store app can't be opened.
+- `AppUpdateType` is `{ FLEXIBLE: 0, IMMEDIATE: 1 }` on every platform (it was `undefined` outside Android).
+- `storeVersion` can be `null` or absent when no update is found.
+- On Android, `startUpdate()` resumes an interrupted immediate update, and installs a flexible update that finished downloading after the app was closed.
+
 ## Installation
 
 ```sh
@@ -661,17 +671,17 @@ export const AppUpdateType = {
 
 #### `UpdateInfo`
 
-| Field              | Type                        | Platform          | Description                                                                                                                                                                                                        |
-| ------------------ | --------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `updateAvailable`  | `boolean`                   | Android, iOS, Web | Whether a newer version is available. On Android, also `true` when an update is already in progress.                                                                                                               |
-| `updateInProgress` | `boolean`                   | Android           | Optional. Whether a developer-triggered update is currently in progress. Call `startUpdate()` to resume it.                                                                                                        |
-| `storeVersion`     | `string`                    | Android, iOS      | Optional. The latest version published in the store. On iOS, this is the version string (`CFBundleShortVersionString`); on Android, the `versionCode`. Absent when no update is available or the app is not found. |
-| `releaseDate`      | `string \| null`            | iOS               | Optional. The release date of the latest store version as an ISO 8601 string.                                                                                                                                      |
-| `daysSinceRelease` | `number \| null`            | Android           | Optional. Value of `clientVersionStalenessDays`: days since the Google Play Store app on the device learned about the update, or `null` if unavailable.                                                            |
-| `flexibleAllowed`  | `boolean`                   | Android           | Optional. Whether a flexible update can be started.                                                                                                                                                                |
-| `immediateAllowed` | `boolean`                   | Android           | Optional. Whether an immediate update can be started.                                                                                                                                                              |
-| `serverPriority`   | `number`                    | Android           | Optional. The update priority received from Google Play Console (0–5).                                                                                                                                             |
-| `serverUpdateType` | `"FLEXIBLE" \| "IMMEDIATE"` | Android           | Optional. Suggested update type derived from `serverPriority` (`IMMEDIATE` for priority >= 4, otherwise `FLEXIBLE`).                                                                                               |
+| Field              | Type                        | Platform          | Description                                                                                                                                                                                                                  |
+| ------------------ | --------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `updateAvailable`  | `boolean`                   | Android, iOS, Web | Whether a newer version is available. On Android, also `true` when an update is already in progress.                                                                                                                         |
+| `updateInProgress` | `boolean`                   | Android           | Optional. Whether a developer-triggered update is currently in progress. Call `startUpdate()` to resume it.                                                                                                                  |
+| `storeVersion`     | `string \| null`            | Android, iOS      | Optional. The latest version published in the store. On iOS, this is the version string (`CFBundleShortVersionString`); on Android, the `versionCode`. `null` or absent when no update is available or the app is not found. |
+| `releaseDate`      | `string \| null`            | iOS               | Optional. The release date of the latest store version as an ISO 8601 string.                                                                                                                                                |
+| `daysSinceRelease` | `number \| null`            | Android           | Optional. Value of `clientVersionStalenessDays`: days since the Google Play Store app on the device learned about the update, or `null` if unavailable.                                                                      |
+| `flexibleAllowed`  | `boolean`                   | Android           | Optional. Whether a flexible update can be started.                                                                                                                                                                          |
+| `immediateAllowed` | `boolean`                   | Android           | Optional. Whether an immediate update can be started.                                                                                                                                                                        |
+| `serverPriority`   | `number`                    | Android           | Optional. The update priority received from Google Play Console (0–5).                                                                                                                                                       |
+| `serverUpdateType` | `"FLEXIBLE" \| "IMMEDIATE"` | Android           | Optional. Suggested update type derived from `serverPriority` (`IMMEDIATE` for priority >= 4, otherwise `FLEXIBLE`).                                                                                                         |
 
 #### `UpdateStartEvent`
 

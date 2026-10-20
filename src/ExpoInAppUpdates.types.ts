@@ -12,9 +12,9 @@ export type UpdateInfo = {
 
   /**
    * The latest version published in the store. On iOS this is the version string (`CFBundleShortVersionString`),
-   * on Android the `versionCode`. Present when an update is available.
+   * on Android the `versionCode`. Present when an update is available; `null` or absent otherwise.
    */
-  storeVersion?: string;
+  storeVersion?: string | null;
 
   /**
    * The release date of the latest store version, as an ISO 8601 string.

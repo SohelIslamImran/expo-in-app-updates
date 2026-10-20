@@ -26,9 +26,6 @@ public final class ExpoInAppUpdatesModule: Module {
   @Event
   var onUpdateCancelled: (UpdateCancelledEvent) -> Void
 
-  // `SKStoreProductViewController.delegate` is weak, so the module keeps the delegate alive.
-  private var storeDelegate: StoreProductDelegate?
-
   @JS
   func checkForUpdate() async throws -> UpdateInfo {
     guard let app = try await AppStoreLookup.fetch() else {
@@ -54,14 +51,14 @@ public final class ExpoInAppUpdatesModule: Module {
   private func presentStore(appId: String) async throws -> Bool {
     let storeViewController = SKStoreProductViewController()
     let delegate = StoreProductDelegate { [weak self] in
-      self?.storeDelegate = nil
       self?.onUpdateCancelled(UpdateCancelledEvent(reason: "User closed the App Store sheet"))
     }
-    storeViewController.delegate = delegate
+    delegate.attach(to: storeViewController)
 
-    do {
-      try await storeViewController.loadProduct(withParameters: [SKStoreProductParameterITunesItemIdentifier: appId])
-    } catch {
+    let loaded = (try? await storeViewController.loadProduct(
+      withParameters: [SKStoreProductParameterITunesItemIdentifier: appId]
+    )) ?? false
+    guard loaded else {
       // The sheet can't load the product (e.g. on the simulator), so open the App Store app instead.
       return await openAppStore(appId: appId)
     }
@@ -76,7 +73,6 @@ public final class ExpoInAppUpdatesModule: Module {
       throw PresentationFailedException()
     }
 
-    storeDelegate = delegate
     onUpdateStart(UpdateStartEvent())
     return true
   }
@@ -95,10 +91,18 @@ public final class ExpoInAppUpdatesModule: Module {
 }
 
 private final class StoreProductDelegate: NSObject, SKStoreProductViewControllerDelegate {
+  private static var associationKey: UInt8 = 0
   private let onFinish: () -> Void
 
   init(onFinish: @escaping () -> Void) {
     self.onFinish = onFinish
+  }
+
+  /// Sets itself as the controller's delegate. `delegate` is weak, so the controller also retains
+  /// the delegate for as long as it lives.
+  func attach(to viewController: SKStoreProductViewController) {
+    viewController.delegate = self
+    objc_setAssociatedObject(viewController, &Self.associationKey, self, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
   }
 
   func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
@@ -108,15 +112,18 @@ private final class StoreProductDelegate: NSObject, SKStoreProductViewController
   }
 }
 
-/// Compares dot-separated versions numerically, treating missing components as zero (`1.0` == `1.0.0`).
+/// Compares dot-separated versions component by component, treating missing components as zero
+/// (`1.0` == `1.0.0`) and comparing digits numerically within each component (`1.10` > `1.9`).
 func isVersion(_ version: String, newerThan other: String) -> Bool {
-  let lhs = version.split(separator: ".").map { Int($0) ?? 0 }
-  let rhs = other.split(separator: ".").map { Int($0) ?? 0 }
+  let lhs = version.split(separator: ".").map(String.init)
+  let rhs = other.split(separator: ".").map(String.init)
   for index in 0..<max(lhs.count, rhs.count) {
-    let left = index < lhs.count ? lhs[index] : 0
-    let right = index < rhs.count ? rhs[index] : 0
-    if left != right {
-      return left > right
+    let left = index < lhs.count ? lhs[index] : "0"
+    let right = index < rhs.count ? rhs[index] : "0"
+    switch left.compare(right, options: .numeric) {
+    case .orderedDescending: return true
+    case .orderedAscending: return false
+    case .orderedSame: continue
     }
   }
   return false
@@ -130,7 +137,7 @@ final class MissingAppStoreIdException: Exception, @unchecked Sendable {
 
 final class PresentationFailedException: Exception, @unchecked Sendable {
   override var reason: String {
-    "Unable to present the App Store sheet: no view controller is available to present it."
+    "Unable to present the App Store sheet over the current screen."
   }
 }
 

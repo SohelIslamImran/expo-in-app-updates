@@ -17,6 +17,7 @@ import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.functions.Coroutine
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import kotlin.coroutines.cancellation.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -89,6 +90,11 @@ class ExpoInAppUpdatesModule : Module() {
 
     AsyncFunction("startUpdate") Coroutine { requestedType: Int? ->
       val info = requestUpdateInfo(::StartUpdateException)
+      // A flexible update can finish downloading after the app was killed; install it now.
+      if (info.installStatus() == InstallStatus.DOWNLOADED) {
+        appUpdateManager.completeUpdate()
+        return@Coroutine true
+      }
       val updateType = when (info.updateAvailability()) {
         UpdateAvailability.UPDATE_AVAILABLE -> chooseUpdateType(info, requestedType)
         // An immediate update was interrupted (e.g. the app was killed); Play requires resuming it.
@@ -100,14 +106,19 @@ class ExpoInAppUpdatesModule : Module() {
       val activity = appContext.currentActivity ?: throw Exceptions.MissingActivity()
       val options = AppUpdateOptions.newBuilder(updateType).setAllowAssetPackDeletion(true).build()
 
-      sendEvent(EVENT_UPDATE_START, mapOf("updateType" to updateTypeName(updateType)))
-      try {
+      val started = try {
         withContext(Dispatchers.Main) {
           appUpdateManager.startUpdateFlowForResult(info, activity, options, REQUEST_CODE)
         }
+      } catch (e: CancellationException) {
+        throw e
       } catch (e: Exception) {
         throw StartUpdateException(e)
       }
+      if (started) {
+        sendEvent(EVENT_UPDATE_START, mapOf("updateType" to updateTypeName(updateType)))
+      }
+      started
     }
 
     OnActivityResult { _, result ->
@@ -124,6 +135,8 @@ class ExpoInAppUpdatesModule : Module() {
   private suspend fun requestUpdateInfo(wrap: (Throwable) -> CodedException): AppUpdateInfo =
     try {
       appUpdateManager.requestAppUpdateInfo()
+    } catch (e: CancellationException) {
+      throw e
     } catch (e: Exception) {
       throw wrap(e)
     }
