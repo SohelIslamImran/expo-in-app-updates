@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -30,6 +31,7 @@ export default function App() {
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [message, setMessage] = useState("Ready to check for a store update.");
   const [eventLog, setEventLog] = useState<string[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const removeListeners = [
@@ -189,11 +191,17 @@ export default function App() {
               />
             </>
           ) : (
-            <ActionButton
-              label="Open App Store"
-              onPress={confirmIosUpdate}
-              disabled={!updateInfo?.updateAvailable}
-            />
+            <>
+              <ActionButton
+                label="Open App Store"
+                onPress={confirmIosUpdate}
+                disabled={!updateInfo?.updateAvailable}
+              />
+              <ActionButton
+                label="Open App Store from a modal"
+                onPress={() => setModalVisible(true)}
+              />
+            </>
           )}
         </View>
 
@@ -210,6 +218,21 @@ export default function App() {
           )}
         </View>
       </ScrollView>
+
+      {/* The App Store sheet must open over modals too (issue #35). */}
+      <Modal
+        animationType="slide"
+        presentationStyle="pageSheet"
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modal}>
+          <Text style={styles.title}>Modal screen</Text>
+          <Text style={styles.message}>{message}</Text>
+          <ActionButton label="Open App Store" onPress={() => startUpdate()} />
+          <ActionButton label="Close" onPress={() => setModalVisible(false)} />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -338,6 +361,13 @@ const styles = StyleSheet.create({
   },
   actions: {
     gap: 10,
+  },
+  modal: {
+    flex: 1,
+    gap: 12,
+    backgroundColor: "#f8fafc",
+    padding: 20,
+    paddingTop: 32,
   },
   button: {
     minHeight: 48,

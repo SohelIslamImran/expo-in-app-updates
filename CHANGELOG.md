@@ -4,7 +4,7 @@
 
 ### 🐛 Bug Fixes
 
-* **android:** Fix Android build and refresh Expo example (#32)
+- **android:** Fix Android build and refresh Expo example (#32)
 
 ## [0.11.0](https://github.com/SohelIslamImran/expo-in-app-updates/compare/v0.10.0-beta.0...v0.11.0) (2026-06-06)
 

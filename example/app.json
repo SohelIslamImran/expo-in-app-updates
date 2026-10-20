@@ -21,6 +21,9 @@
       },
       "versionCode": 1,
       "package": "expo.modules.inappupdates.example"
+    },
+    "experiments": {
+      "autolinkingModuleResolution": true
     }
   }
 }
