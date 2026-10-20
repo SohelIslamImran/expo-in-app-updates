@@ -1,128 +1,152 @@
 import ExpoModulesCore
 import StoreKit
 
-// Event constants
-let EVENT_UPDATE_START = "updateStart"
-let EVENT_UPDATE_DOWNLOADED = "updateDownloaded"
-let EVENT_UPDATE_CANCELLED = "updateCancelled"
-let EVENT_UPDATE_COMPLETED = "updateCompleted"
-
-public class ExpoInAppUpdatesModule: Module {
-    private var storeDelegate: StoreProductViewControllerDelegate?
-
-    public func definition() -> ModuleDefinition {
-        Name("ExpoInAppUpdates")
-
-        // Register events
-        Events(
-            EVENT_UPDATE_START,
-            EVENT_UPDATE_DOWNLOADED,
-            EVENT_UPDATE_CANCELLED,
-            EVENT_UPDATE_COMPLETED
-        )
-
-        AsyncFunction("checkForUpdate") { (promise: Promise) in
-            let appId = Bundle.main.infoDictionary?["AppStoreID"] as? String ?? ""
-            let appStoreCountry = Bundle.main.infoDictionary?["AppStoreCountry"] as? String ?? ""
-            let timestamp = Date().timeIntervalSince1970
-            let baseUrl = "https://itunes.apple.com/lookup?id=\(appId)&_=\(timestamp)"
-            let appStoreURL = URL(string: appStoreCountry.isEmpty ? baseUrl : "\(baseUrl)&country=\(appStoreCountry)")!
-            let request = URLRequest(url: appStoreURL, cachePolicy: .reloadIgnoringLocalAndRemoteCacheData)
-
-            URLSession(configuration: .ephemeral).dataTask(with: request) { (data, response, error) in
-                if let error = error {
-                    promise.reject("ERROR", "Failed to fetch app info: \(error.localizedDescription)")
-                    return
-                }
-
-                guard let data = data else {
-                    promise.reject("ERROR", "No data received from App Store")
-                    return
-                }
-
-                do {
-                    if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
-                       let results = json["results"] as? [[String: Any]],
-                       let appStoreVersion = results.first?["version"] as? String {
-                        let releaseDate = results.first?["currentVersionReleaseDate"] ?? nil
-                        let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-                        let updateAvailable = appStoreVersion.compare(currentVersion, options: .numeric) == .orderedDescending
-                        promise.resolve(["updateAvailable": updateAvailable, "releaseDate": releaseDate, "storeVersion": appStoreVersion])
-                    } else {
-                        promise.resolve(["updateAvailable": false])
-                    }
-                } catch {
-                    promise.reject("ERROR", "Failed to parse app info: \(error.localizedDescription)")
-                }
-            }.resume()
-        }
-
-        AsyncFunction("startUpdate") { (promise: Promise) in
-            let appId = Bundle.main.infoDictionary?["AppStoreID"] as? String ?? ""
-            if appId.isEmpty {
-                promise.reject("ERROR", "AppStoreID not set in Info.plist. Please add your AppStoreID to Info.plist.")
-                return
-            }
-
-            DispatchQueue.main.async {
-                // Send update start event
-                self.sendEvent(EVENT_UPDATE_START, ["updateType": nil])
-
-                guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                      let rootViewController = scene.windows.first?.rootViewController else {
-                    promise.reject("ERROR", "Unable to get root view controller")
-                    return
-                }
-
-                let storeViewController = SKStoreProductViewController()
-                let parameters = [SKStoreProductParameterITunesItemIdentifier: appId]
-
-                // Create and store a reference to the delegate
-                self.storeDelegate = StoreProductViewControllerDelegate(module: self)
-                storeViewController.delegate = self.storeDelegate
-
-                storeViewController.loadProduct(withParameters: parameters) { (loaded, error) in
-                    if loaded {
-                        DispatchQueue.main.async {
-                            rootViewController.present(storeViewController, animated: true, completion: nil)
-                        }
-                        promise.resolve(true)
-                    } else {
-                        let urlString = "https://apps.apple.com/app/id\(appId)"
-                        if let url = URL(string: urlString) {
-                            DispatchQueue.main.async {
-                                UIApplication.shared.open(url, options: [:]) { success in
-                                    if success {
-                                        promise.resolve(true)
-                                    } else {
-                                        promise.reject("ERROR", "Failed to open App Store URL")
-                                    }
-                                }
-                            }
-                        } else {
-                            promise.reject("ERROR", "Invalid App Store URL")
-                        }
-                    }
-                }
-            }
-        }
-    }
+@Record
+struct UpdateInfo {
+  var updateAvailable: Bool
+  var storeVersion: String?
+  var releaseDate: String?
 }
 
-// SKStoreProductViewController delegate
-class StoreProductViewControllerDelegate: NSObject, SKStoreProductViewControllerDelegate {
-    private weak var module: ExpoInAppUpdatesModule?
+@Record
+struct UpdateStartEvent {
+  var updateType: String?
+}
 
-    init(module: ExpoInAppUpdatesModule) {
-        self.module = module
-        super.init()
+@Record
+struct UpdateCancelledEvent {
+  var reason: String?
+}
+
+@ExpoModule("ExpoInAppUpdates")
+public final class ExpoInAppUpdatesModule: Module {
+  @Event
+  var onUpdateStart: (UpdateStartEvent) -> Void
+
+  @Event
+  var onUpdateCancelled: (UpdateCancelledEvent) -> Void
+
+  @JS
+  func checkForUpdate() async throws -> UpdateInfo {
+    guard let app = try await AppStoreLookup.fetch() else {
+      return UpdateInfo(updateAvailable: false)
+    }
+    let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
+    return UpdateInfo(
+      updateAvailable: isVersion(app.version, newerThan: currentVersion),
+      storeVersion: app.version,
+      releaseDate: app.currentVersionReleaseDate
+    )
+  }
+
+  @JS
+  func startUpdate() async throws -> Bool {
+    guard let appId = try await AppStoreLookup.appStoreId() else {
+      throw MissingAppStoreIdException()
+    }
+    return try await presentStore(appId: appId)
+  }
+
+  @MainActor
+  private func presentStore(appId: String) async throws -> Bool {
+    guard let numericAppId = Int64(appId), numericAppId > 0 else {
+      throw MissingAppStoreIdException()
     }
 
-    func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
-        // This is called when the user cancels or completes the update process
-        // Since we don't have a way to determine if the user updated the app,
-        // we send a cancellation event for now
-        module?.sendEvent(EVENT_UPDATE_CANCELLED, [:])
-        viewController.dismiss(animated: true)
+    let storeViewController = SKStoreProductViewController()
+    let delegate = StoreProductDelegate { [weak self] in
+      self?.onUpdateCancelled(UpdateCancelledEvent(reason: "User closed the App Store sheet"))
     }
+    delegate.attach(to: storeViewController)
+
+    let loaded = (try? await storeViewController.loadProduct(
+      withParameters: [SKStoreProductParameterITunesItemIdentifier: NSNumber(value: numericAppId)]
+    )) ?? false
+    guard loaded else {
+      // The sheet can't load the product (e.g. on the simulator), so open the App Store app instead.
+      return await openAppStore(appId: appId)
+    }
+
+    // Resolve the presenter after loading: the screen can change while the product loads, and
+    // presenting on a controller that already presents a modal silently fails.
+    guard let presenter = appContext?.utilities?.currentViewController() else {
+      throw PresentationFailedException()
+    }
+    presenter.present(storeViewController, animated: true)
+    guard storeViewController.presentingViewController != nil else {
+      throw PresentationFailedException()
+    }
+
+    onUpdateStart(UpdateStartEvent())
+    return true
+  }
+
+  @MainActor
+  private func openAppStore(appId: String) async -> Bool {
+    guard let url = URL(string: "https://apps.apple.com/app/id\(appId)") else {
+      return false
+    }
+    let opened = await UIApplication.shared.open(url)
+    if opened {
+      onUpdateStart(UpdateStartEvent())
+    }
+    return opened
+  }
+}
+
+private final class StoreProductDelegate: NSObject, SKStoreProductViewControllerDelegate {
+  private static var associationKey: UInt8 = 0
+  private let onFinish: () -> Void
+
+  init(onFinish: @escaping () -> Void) {
+    self.onFinish = onFinish
+  }
+
+  /// Sets itself as the controller's delegate. `delegate` is weak, so the controller also retains
+  /// the delegate for as long as it lives.
+  func attach(to viewController: SKStoreProductViewController) {
+    viewController.delegate = self
+    objc_setAssociatedObject(viewController, &Self.associationKey, self, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+  }
+
+  func productViewControllerDidFinish(_ viewController: SKStoreProductViewController) {
+    // StoreKit doesn't say whether the user updated, so closing the sheet counts as a cancellation.
+    viewController.dismiss(animated: true)
+    onFinish()
+  }
+}
+
+/// Compares dot-separated versions component by component, treating missing components as zero
+/// (`1.0` == `1.0.0`) and comparing digits numerically within each component (`1.10` > `1.9`).
+func isVersion(_ version: String, newerThan other: String) -> Bool {
+  let lhs = version.split(separator: ".").map(String.init)
+  let rhs = other.split(separator: ".").map(String.init)
+  for index in 0..<max(lhs.count, rhs.count) {
+    let left = index < lhs.count ? lhs[index] : "0"
+    let right = index < rhs.count ? rhs[index] : "0"
+    switch left.compare(right, options: .numeric) {
+    case .orderedDescending: return true
+    case .orderedAscending: return false
+    case .orderedSame: continue
+    }
+  }
+  return false
+}
+
+final class MissingAppStoreIdException: Exception, @unchecked Sendable {
+  override var reason: String {
+    "Unable to find the app in the App Store. Set `AppStoreID` in Info.plist, or publish the app with this bundle identifier."
+  }
+}
+
+final class PresentationFailedException: Exception, @unchecked Sendable {
+  override var reason: String {
+    "Unable to present the App Store sheet over the current screen."
+  }
+}
+
+final class LookupFailedException: GenericException<String>, @unchecked Sendable {
+  override var reason: String {
+    "Failed to fetch app info from the App Store: \(param)"
+  }
 }

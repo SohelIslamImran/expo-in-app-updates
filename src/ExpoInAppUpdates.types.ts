@@ -1,114 +1,92 @@
-export type ExpoInAppUpdatesModuleType = {
-  /** [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible) */
-  FLEXIBLE: 0;
-
-  /** [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) */
-  IMMEDIATE: 1;
+/** Result of {@link checkForUpdate}. */
+export type UpdateInfo = {
+  /** Whether a newer version is available in the App Store / Play Store. */
+  updateAvailable: boolean;
 
   /**
-   * Checks if an app update is available.
+   * Whether a developer-triggered update is already in progress. Call `startUpdate()` to resume it.
    *
-   * @return A promise that resolves updateAvailable for Android and iOS, flexibleAllowed and immediateAllowed for Android
+   * @platform android
    */
-  checkForUpdate: () => Promise<{
-    /** If an update is available */
-    updateAvailable: boolean;
-
-    /** If an update is in progress */
-    updateInProgress?: boolean;
-
-    /** The latest app version published in the App Store / Play Store. On Android, this is the `versionCode` that you defined in `app.json`. */
-    storeVersion: string;
-
-    /** The release date of the current version of the app
-     *
-     * @platform iOS */
-    releaseDate?: string | null;
-
-    /** The value of the [clientVersionStalenessDays](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo.html#clientVersionStalenessDays()).
-     * @description If an update is available or in progress, this will be the number of days since the Google Play Store app on the user's device has learnt about an available update.
-     *
-     * If update is not available, or if staleness information is unavailable, this will be null.
-     *
-     * @platform android */
-    daysSinceRelease?: number | null;
-
-    /**
-     * If able to start a [Flexible Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible)
-     *
-     * @platform android */
-    flexibleAllowed?: boolean;
-
-    /**
-     * If able to start an [Immediate Update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate)
-     * @platform android */
-    immediateAllowed?: boolean;
-
-    /**
-     * Update priority received from Play Store
-     * @platform android
-     */
-    serverPriority?: number;
-
-    /**
-     * Update type calculated from serverPriority
-     * @platform android
-     */
-    serverUpdateType?: "FLEXIBLE" | "IMMEDIATE";
-  }>;
+  updateInProgress?: boolean;
 
   /**
-   * Starts an in-app update.
-   *
-   * @param updateType - Whether the update should be a [flexible update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible) or [immediate update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate).
-   *
-   * @return Whether the update was started successfully.
+   * The latest version published in the store. On iOS this is the version string (`CFBundleShortVersionString`),
+   * on Android the `versionCode`. Present when an update is available; `null` or absent otherwise.
    */
-  startUpdate: (
-    /**
-     * Must be one of the [AppUpdateType](../index.ts)
-     * @platform android */
-    updateType?: number
-  ) => Promise<boolean>;
+  storeVersion?: string | null;
 
   /**
-   * Adds an event listener for the specified event
+   * The release date of the latest store version, as an ISO 8601 string.
    *
-   * @param eventName - The event name to listen for
-   * @param listener - The callback function
-   * @returns A subscription object with a remove method
+   * @platform ios
    */
-  addListener: <K extends keyof ExpoInAppUpdatesEvents>(
-    eventName: K,
-    listener: ExpoInAppUpdatesEvents[K]
-  ) => { remove: () => void };
+  releaseDate?: string | null;
+
+  /**
+   * The value of [`clientVersionStalenessDays`](https://developer.android.com/reference/com/google/android/play/core/appupdate/AppUpdateInfo#clientVersionStalenessDays()):
+   * the number of days since the Play Store app on the device learned about the update, or `null` if unknown.
+   *
+   * @platform android
+   */
+  daysSinceRelease?: number | null;
+
+  /**
+   * Whether a [flexible update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#flexible) can be started.
+   *
+   * @platform android
+   */
+  flexibleAllowed?: boolean;
+
+  /**
+   * Whether an [immediate update](https://developer.android.com/guide/playcore/in-app-updates/kotlin-java#immediate) can be started.
+   *
+   * @platform android
+   */
+  immediateAllowed?: boolean;
+
+  /**
+   * The [update priority](https://developer.android.com/guide/playcore/in-app-updates#check-priority) set in the Play Console (0–5).
+   *
+   * @platform android
+   */
+  serverPriority?: number;
+
+  /**
+   * The update type derived from `serverPriority`: `IMMEDIATE` for priority 4 or higher, otherwise `FLEXIBLE`.
+   *
+   * @platform android
+   */
+  serverUpdateType?: "FLEXIBLE" | "IMMEDIATE";
 };
 
 export type UpdateStartEvent = {
-  /** Type of update that was started */
+  /** Type of the update that was started. Always `undefined` on iOS. */
   updateType?: "FLEXIBLE" | "IMMEDIATE";
 };
 
 export type UpdateDownloadedEvent = {
-  /** Whether the update is ready to be installed */
+  /** Whether the update is ready to be installed. */
   readyToInstall: boolean;
 };
 
 export type UpdateCancelledEvent = {
-  /** Reason for cancellation if available */
+  /** Reason for the cancellation, if available. */
   reason?: string;
 };
 
 export type UpdateCompletedEvent = {
-  /** Version that was installed */
+  /** Version that was installed, if available. */
   version?: string;
 };
 
-export type UpdateEvents = {
+export type ExpoInAppUpdatesEvents = {
+  /** The update flow was presented. */
   updateStart: (event: UpdateStartEvent) => void;
+  /** A flexible update finished downloading. Android only. */
   updateDownloaded: (event: UpdateDownloadedEvent) => void;
+  /** The user dismissed the update flow (on iOS: closed the App Store sheet). */
   updateCancelled: (event: UpdateCancelledEvent) => void;
+  /** The update was installed. Android only. */
   updateCompleted: (event: UpdateCompletedEvent) => void;
 };
-
-export type ExpoInAppUpdatesEvents = UpdateEvents;

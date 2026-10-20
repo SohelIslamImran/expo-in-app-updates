@@ -1,27 +1,23 @@
-apply plugin: 'com.android.library'
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
 
 group = 'expo.modules.inappupdates'
-version = '0.1.0'
-
-def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
-apply from: expoModulesCorePlugin
-applyKotlinExpoModulesCorePlugin()
-useCoreDependencies()
-useExpoPublishing()
-useDefaultAndroidSdkVersions()
+version = '0.12.0'
 
 android {
   namespace "expo.modules.inappupdates"
   defaultConfig {
     versionCode 1
-    versionName "0.1.0"
+    versionName "0.12.0"
   }
-  lintOptions {
+  lint {
     abortOnError false
   }
 }
 
 dependencies {
-    implementation 'com.google.android.play:app-update:2.1.0'
-    implementation 'com.google.android.play:app-update-ktx:2.1.0'
+  implementation 'com.google.android.play:app-update:2.1.0'
+  implementation 'com.google.android.play:app-update-ktx:2.1.0'
 }

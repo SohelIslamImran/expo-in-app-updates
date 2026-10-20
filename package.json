@@ -3,9 +3,11 @@
   "version": "0.12.0",
   "description": "Native in-app updates for Android and iOS",
   "keywords": [
-    "ExpoInAppUpdates",
+    "app-store",
     "expo",
     "expo-in-app-updates",
+    "in-app-updates",
+    "play-store",
     "react-native"
   ],
   "homepage": "https://github.com/SohelIslamImran/expo-in-app-updates#readme",
@@ -30,18 +32,19 @@
     "open:ios": "xed example/ios",
     "open:android": "open -a \"Android Studio\" example/android"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@release-it/conventional-changelog": "^11.0.1",
-    "@types/react": "~19.2.17",
-    "expo": "~56.0.9",
+    "@release-it/conventional-changelog": "^12.0.2",
+    "@types/react": "~19.3.0",
+    "expo": "~58.0.16",
     "expo-module-scripts": "^56.0.3",
-    "oxfmt": "^0.53.0",
-    "oxlint": "^1.68.0",
-    "release-it": "^20.2.0"
+    "oxfmt": "^0.74.0",
+    "oxlint": "^1.89.0",
+    "release-it": "^21.1.1"
   },
   "peerDependencies": {
-    "expo": "*"
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
   },
   "release-it": {
     "git": {
