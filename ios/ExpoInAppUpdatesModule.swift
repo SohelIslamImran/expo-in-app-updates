@@ -49,6 +49,10 @@ public final class ExpoInAppUpdatesModule: Module {
 
   @MainActor
   private func presentStore(appId: String) async throws -> Bool {
+    guard let numericAppId = Int64(appId), numericAppId > 0 else {
+      throw MissingAppStoreIdException()
+    }
+
     let storeViewController = SKStoreProductViewController()
     let delegate = StoreProductDelegate { [weak self] in
       self?.onUpdateCancelled(UpdateCancelledEvent(reason: "User closed the App Store sheet"))
@@ -56,7 +60,7 @@ public final class ExpoInAppUpdatesModule: Module {
     delegate.attach(to: storeViewController)
 
     let loaded = (try? await storeViewController.loadProduct(
-      withParameters: [SKStoreProductParameterITunesItemIdentifier: appId]
+      withParameters: [SKStoreProductParameterITunesItemIdentifier: NSNumber(value: numericAppId)]
     )) ?? false
     guard loaded else {
       // The sheet can't load the product (e.g. on the simulator), so open the App Store app instead.

@@ -216,11 +216,13 @@ const useInAppUpdates = () => {
 
         if (Platform.OS === "android") {
           try {
-            await ExpoInAppUpdates.startUpdate();
-            await AsyncStorage.setItem(
-              "savedStoreVersion",
-              result.storeVersion
-            );
+            const started = await ExpoInAppUpdates.startUpdate();
+            if (started) {
+              await AsyncStorage.setItem(
+                "savedStoreVersion",
+                result.storeVersion
+              );
+            }
           } catch (updateErr) {
             console.error("Failed to start update:", updateErr);
           }
@@ -236,11 +238,13 @@ const useInAppUpdates = () => {
               isPreferred: true,
               onPress: async () => {
                 try {
-                  await ExpoInAppUpdates.startUpdate();
-                  await AsyncStorage.setItem(
-                    "savedStoreVersion",
-                    result.storeVersion ?? ""
-                  );
+                  const started = await ExpoInAppUpdates.startUpdate();
+                  if (started) {
+                    await AsyncStorage.setItem(
+                      "savedStoreVersion",
+                      result.storeVersion ?? ""
+                    );
+                  }
                 } catch (updateErr) {
                   console.error("Failed to start update:", updateErr);
                 }
@@ -629,7 +633,7 @@ Starts the in-app update flow.
   - `isImmediate` (`boolean`, optional): Android only. Set `true` to start an immediate update flow, or `false` for a flexible update flow. When omitted, the update type is selected based on the Play Console update priority (priority >= 4 triggers immediate update, otherwise flexible).
 - **Returns**: `Promise<boolean>` - `true` if the update flow was successfully presented or started; `false` otherwise.
 - **Platform Notes**:
-  - **Android**: Starts the Google Play update flow. Resumes an interrupted immediate update when `DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS` is active. Rejects with `ERR_START_UPDATE` on failure.
+  - **Android**: Starts the Google Play update flow. Resumes an interrupted immediate update when `DEVELOPER_TRIGGERED_UPDATE_IN_PROGRESS` is active. Rejects with `ERR_START_UPDATE` on Play Core launch or installation failure, or `ERR_MISSING_ACTIVITY` if called when the host activity is unavailable.
   - **iOS**: Presents an `SKStoreProductViewController` sheet displaying the App Store product page over the active screen, including over native `<Modal>`s and Expo Router modal/formSheet routes ([#35](https://github.com/SohelIslamImran/expo-in-app-updates/issues/35)). Rejects if the sheet cannot be presented. Falls back to opening the App Store app if product sheet loading fails (e.g., in iOS Simulator).
   - **Web**: Resolves `false`.
 
@@ -643,7 +647,7 @@ Convenience function that checks whether an update is available and starts the u
 
 - **Parameters**:
   - `isImmediate` (`boolean`, optional, default: `false`): Android only. Whether to request an immediate update when allowed. When `false` or omitted, type is chosen from Play Store priority.
-- **Returns**: `Promise<boolean>` - `true` if an update was available and started; `false` if no update was available.
+- **Returns**: `Promise<boolean>` - `true` if an update was available and started; `false` if no update was available or if the update flow could not be started.
 
 #### `addUpdateListener(eventName, listener)`
 
@@ -665,7 +669,7 @@ Subscribes to an update lifecycle event.
 
 #### `AppUpdateType`
 
-Numeric constants matching Google Play Core's `AppUpdateType` (Android only):
+Numeric constants matching Google Play Core's `AppUpdateType`:
 
 ```ts
 export const AppUpdateType = {

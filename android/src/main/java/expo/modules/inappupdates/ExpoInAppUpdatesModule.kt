@@ -12,6 +12,7 @@ import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
 import com.google.android.play.core.ktx.requestAppUpdateInfo
+import com.google.android.play.core.ktx.requestCompleteUpdate
 import expo.modules.kotlin.exception.CodedException
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.functions.Coroutine
@@ -92,8 +93,14 @@ class ExpoInAppUpdatesModule : Module() {
       val info = requestUpdateInfo(::StartUpdateException)
       // A flexible update can finish downloading after the app was killed; install it now.
       if (info.installStatus() == InstallStatus.DOWNLOADED) {
-        appUpdateManager.completeUpdate()
-        return@Coroutine true
+        try {
+          appUpdateManager.requestCompleteUpdate()
+          return@Coroutine true
+        } catch (e: CancellationException) {
+          throw e
+        } catch (e: Exception) {
+          throw StartUpdateException(e)
+        }
       }
       val updateType = when (info.updateAvailability()) {
         UpdateAvailability.UPDATE_AVAILABLE -> chooseUpdateType(info, requestedType)
