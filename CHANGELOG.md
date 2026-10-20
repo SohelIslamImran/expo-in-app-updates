@@ -4,7 +4,16 @@
 
 ### ✨ Features
 
-- upgrade to Expo SDK 58 and Expo Modules 2.0 ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/issues/36)) ([a2239a0](https://github.com/SohelIslamImran/expo-in-app-updates/commit/a2239a0bc88d1ed00996a48add166c58f9aa9c0a)), closes [#35](https://github.com/SohelIslamImran/expo-in-app-updates/issues/35)
+- **ios:** Fix StoreKit `SKStoreProductViewController` sheet presentation over native modals and Expo Router modal routes ([#35](https://github.com/SohelIslamImran/expo-in-app-updates/issues/35)) ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/pull/36))
+- **ios:** Support optional `AppStoreID` via bundle identifier lookup ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/pull/36))
+- **android:** Migrate to Kotlin coroutines with `requestAppUpdateInfo` and `requestCompleteUpdate` ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/pull/36))
+- **types:** Modernize TypeScript types, export `UpdateInfo`, and add cross-platform `AppUpdateType` ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/pull/36))
+
+### 🛠️ Changes in Build Process & Tools
+
+- Upgrade to Expo SDK 58 (React Native 0.88, React 19.3) ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/pull/36))
+- Upgrade to Expo Modules 2.0 with `@ExpoModule`, `@JS`, `@Event`, and `@Record` ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/pull/36))
+- Refresh example project and documentation ([#36](https://github.com/SohelIslamImran/expo-in-app-updates/pull/36))
 
 ## [0.12.0](https://github.com/SohelIslamImran/expo-in-app-updates/compare/v0.11.0...v0.12.0) (2026-06-07)
 
