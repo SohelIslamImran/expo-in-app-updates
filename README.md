@@ -43,16 +43,16 @@ Configuration in `app.json` / `app.config.js` is optional but recommended:
 - `AppStoreID`: The numeric App Store ID from your store URL (e.g., `1234567890` from `https://apps.apple.com/app/id1234567890`). This is optional; if omitted, the module looks up your app by bundle identifier via the iTunes Search API. Setting it is recommended because it saves a network lookup during `startUpdate()` and avoids lookup ambiguity.
 - `AppStoreCountry`: Optional two-letter country code (e.g., `"pl"` for Poland) where your app is available, needed only if your app is not available in the US store and the default lookup fails.
 
-```jsonc
+```json
 {
   "expo": {
     "ios": {
       "infoPlist": {
         "AppStoreID": "1234567890",
-        "AppStoreCountry": "pl",
-      },
-    },
-  },
+        "AppStoreCountry": "pl"
+      }
+    }
+  }
 }
 ```
 
@@ -192,12 +192,12 @@ const styles = StyleSheet.create({
 
 #### Prompt once per store version
 
-Prompts the user when an update is available, but avoids asking again for the same store version if the user cancels or dismisses the prompt:
+Prompts the user when an update is available, but avoids asking again for the same store version if the user cancels or dismisses the prompt. It stores the version with `expo-sqlite`'s key-value store (`npx expo install expo-sqlite`); any persistent storage works:
 
 ```tsx
 import { useEffect } from "react";
 import { Alert, Platform } from "react-native";
-import AsyncStorage from "expo-sqlite/async-storage";
+import AsyncStorage from "expo-sqlite/kv-store";
 import * as ExpoInAppUpdates from "expo-in-app-updates";
 
 const useInAppUpdates = () => {
@@ -491,7 +491,9 @@ export default function App() {
         const result = await ExpoInAppUpdates.checkForUpdate();
         if (result.updateAvailable) {
           try {
-            await ExpoInAppUpdates.startUpdate(true);
+            const started = await ExpoInAppUpdates.startUpdate(true);
+            // `false` means no flow was shown (e.g. immediate updates aren't allowed), so block anyway.
+            if (!started) setShowUpdateBlocker(true);
           } catch (updateErr) {
             console.error("Failed to start update:", updateErr);
             setShowUpdateBlocker(true);
@@ -532,14 +534,19 @@ export default function App() {
   }, [showUpdateBlocker]);
 
   const retryUpdate = async () => {
-    try {
-      await ExpoInAppUpdates.startUpdate(Platform.OS === "android");
-    } catch (retryErr) {
-      console.error("Retry update failed:", retryErr);
+    const showFailure = () =>
       Alert.alert(
         "Update Failed",
         "Unable to start the update. Please try again."
       );
+    try {
+      const started = await ExpoInAppUpdates.startUpdate(
+        Platform.OS === "android" ? true : undefined
+      );
+      if (!started) showFailure();
+    } catch (retryErr) {
+      console.error("Retry update failed:", retryErr);
+      showFailure();
     }
   };
 
