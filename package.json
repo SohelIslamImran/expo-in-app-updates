@@ -1,6 +1,6 @@
 {
   "name": "expo-in-app-updates",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Native in-app updates for Android and iOS",
   "keywords": [
     "app-store",
@@ -16,7 +16,10 @@
   },
   "license": "MIT",
   "author": "SohelIslamImran <sohelislamimran@gmail.com> (https://github.com/SohelIslamImran)",
-  "repository": "https://github.com/SohelIslamImran/expo-in-app-updates",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SohelIslamImran/expo-in-app-updates.git"
+  },
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
